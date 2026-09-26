@@ -13,6 +13,7 @@ from .questions import (
     MunicipalElectionComparisonQuestion,
     MunicipalElectionQuestion,
     PopulationQuestion,
+    RateQuestion,
     UnemploymentQuestion,
     parse_question,
 )
@@ -247,6 +248,10 @@ class SamfunnsdataWindow(Gtk.ApplicationWindow):
             )
         except ValueError as error:
             self.status.set_text(str(error))
+            return
+
+        if isinstance(question, RateQuestion):
+            self.jobs.submit(lambda token: gui_work.rate_question(token, question), self._apply_analysis)
             return
 
         if isinstance(question, UnemploymentQuestion):

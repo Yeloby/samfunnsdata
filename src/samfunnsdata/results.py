@@ -1,4 +1,6 @@
-"""Version 1 application contracts for population; no GTK or provider frames.
+"""Shared application contracts; no GTK or provider frames.
+
+Population receipts retain v1/v2; non-municipal time series use receipt v3.
 
 Source observations and derived facts are separate. None denotes unknown/missing,
 not false, zero, or an empty collection. Provider metadata is an immutable JSON
@@ -89,6 +91,42 @@ class PopulationSeries:
 
 
 @dataclass(frozen=True)
+class TimeObservation(Observation):
+    calculation_method: str | None = None
+
+
+@dataclass(frozen=True)
+class SeriesSelection:
+    operation: str
+    since: int | None
+    series_code: str
+
+
+@dataclass(frozen=True)
+class SeriesFacts:
+    first_period: str
+    last_period: str
+    first_value: float | None
+    last_value: float | None
+    change: float | None
+    change_unit: str
+
+
+@dataclass(frozen=True)
+class TimeSeries:
+    id: str
+    name: str
+    selection: SeriesSelection
+    source_returned_period: tuple[str, str]
+    source_observations: tuple[TimeObservation, ...]
+    derived_facts: SeriesFacts
+    status_available: bool
+    provider_metadata_json: str | None
+    provenance: Provenance
+    warnings: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class Transformation:
     operation: str
     series_ids: tuple[str, ...]
@@ -101,7 +139,7 @@ class Transformation:
 class DataReceipt:
     source: Source
     measure: Measure
-    series: tuple[PopulationSeries, ...]
+    series: tuple[PopulationSeries | TimeSeries, ...]
     transformations: tuple[Transformation, ...]
     used_at: datetime
     application_version: str
@@ -111,8 +149,11 @@ class DataReceipt:
     query_plan_hash: str | None = None
 
     def __post_init__(self):
-        if self.schema_version not in {"1", "2"}:
+        if self.schema_version not in {"1", "2", "3"}:
             raise ValueError("Unsupported DataReceipt schema version")
+        expected_series = TimeSeries if self.schema_version == "3" else PopulationSeries
+        if any(not isinstance(item, expected_series) for item in self.series):
+            raise ValueError("Series type does not match DataReceipt schema version")
         if self.used_at.utcoffset() is None:
             raise ValueError("used_at must include a timezone")
 
@@ -147,7 +188,7 @@ class DataReceipt:
     @classmethod
     def from_json(cls, text):
         value = json.loads(text)
-        if value.get("schema_version") not in {"1", "2"}:
+        if value.get("schema_version") not in {"1", "2", "3"}:
             raise ValueError("Unsupported DataReceipt schema version")
         series = []
         for item in value.pop("series"):
@@ -159,12 +200,14 @@ class DataReceipt:
                 if metadata is not None
                 else None
             )
-            item["selection"] = Selection(**item["selection"])
+            is_time_series = value["schema_version"] == "3"
+            selection_type = SeriesSelection if is_time_series else Selection
+            item["selection"] = selection_type(**item["selection"])
             item["source_returned_period"] = tuple(item["source_returned_period"])
             item["source_observations"] = tuple(
-                Observation(**o) for o in item["source_observations"]
+                (TimeObservation if is_time_series else Observation)(**o) for o in item["source_observations"]
             )
-            item["derived_facts"] = SeriesSummary(**item["derived_facts"])
+            item["derived_facts"] = (SeriesFacts if is_time_series else SeriesSummary)(**item["derived_facts"])
             provenance = item["provenance"]
             if provenance["fetched_at"] is not None:
                 provenance["fetched_at"] = datetime.fromisoformat(
@@ -173,7 +216,7 @@ class DataReceipt:
             provenance["requests"] = tuple(RequestRecord(**r) for r in provenance.get("requests", ()))
             item["provenance"] = Provenance(**provenance)
             item["warnings"] = tuple(item["warnings"])
-            series.append(PopulationSeries(**item))
+            series.append((TimeSeries if is_time_series else PopulationSeries)(**item))
         transformations = tuple(
             Transformation(
                 t["operation"],

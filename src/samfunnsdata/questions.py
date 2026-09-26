@@ -5,6 +5,30 @@ from .concepts import find_concepts, normalize_norwegian_text
 
 
 @dataclass(frozen=True)
+class RateQuestion:
+    operation: str = "latest"
+    since: int | None = None
+
+
+def parse_rate_question(text: str) -> RateQuestion:
+    text = normalize_norwegian_text(text).casefold().rstrip("?.").strip()
+    term = r"(?:norges banks )?styringsrent(?:e|en|a)"
+    latest = rf"(?:(?:hva er|vis) )?{term}"
+    history = rf"hvordan har {term} utviklet seg"
+    since = re.fullmatch(rf"(?:(?:vis )?{term}|{history}) siden ([0-9]{{4}})", text)
+    if since:
+        year = int(since.group(1))
+        if year == 0:
+            raise ValueError("Fra år må være større enn null.")
+        return RateQuestion("history", year)
+    if re.fullmatch(history, text):
+        return RateQuestion("history")
+    if re.fullmatch(latest, text):
+        return RateQuestion()
+    raise ValueError("Styringsrenten støtter siste observasjon eller historikk: «Vis styringsrenten siden 2015».")
+
+
+@dataclass(frozen=True)
 class PopulationQuestion:
     place: str
     compare_place: str | None = None
@@ -456,6 +480,8 @@ def parse_election_question(text: str) -> ElectionQuestion:
 
 
 def parse_question(text: str):
+    if "policy_rate" in find_concepts(text):
+        return parse_rate_question(text)
     parsers = [
         parse_unemployment_question,
         parse_election_comparison_question,

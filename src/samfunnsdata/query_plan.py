@@ -154,11 +154,26 @@ def validate_query_plan(plan: QueryPlan | dict[str, Any] | str, *, dataset_overr
             f"Dataset {getattr(dataset, 'id', canonical['dataset_id'])} is not SUPPORTED for execution."
         )
 
-    if canonical["dataset_id"] != "ssb-07459-population":
+    if canonical["dataset_id"] not in {"ssb-07459-population", "norges-bank-policy-rate"}:
         raise QueryPlanValidationError("No query plan executor for this dataset.")
     for key in ("grouping", "ordering", "limit"):
         if canonical[key] not in ([], None):
             raise QueryPlanValidationError(f"Unsupported plan option: {key}")
+
+    if canonical["dataset_id"] == "norges-bank-policy-rate":
+        from .providers.norway.norges_bank import validate_selection
+
+        if canonical["measure"] != "policy_rate" or canonical["measure"] not in dataset.measures:
+            raise QueryPlanValidationError("Unknown measure for policy rate.")
+        if set(canonical["filters"]) - {"since"}:
+            raise QueryPlanValidationError("Unknown policy-rate filter.")
+        if "since" in canonical["filters"] and canonical["filters"]["since"] is None:
+            raise QueryPlanValidationError("since must be an integer when provided.")
+        try:
+            validate_selection(canonical["operation"], canonical["filters"].get("since"))
+        except ValueError as exc:
+            raise QueryPlanValidationError(str(exc)) from exc
+        return QueryPlan.from_json(canonical)
 
     operation = canonical["operation"]
     if operation != "lookup":
@@ -257,8 +272,22 @@ def plan_from_population_question(question) -> QueryPlan:
     )
 
 
-def execute_query_plan(plan: QueryPlan | dict[str, Any] | str):
+def plan_from_rate_question(question):
+    return validate_query_plan(QueryPlan(
+        dataset_id="norges-bank-policy-rate", operation=question.operation,
+        filters={} if question.since is None else {"since": question.since}, measure="policy_rate",
+    ))
+
+
+def execute_query_plan(plan: QueryPlan | dict[str, Any] | str, *, checkpoint=lambda: None):
     validated = validate_query_plan(plan)
+    checkpoint()
+    if validated.dataset_id == "norges-bank-policy-rate":
+        from .rates import analyze_rate
+
+        result = analyze_rate(validated.operation, validated.filters.get("since"), checkpoint=checkpoint)
+        receipt = replace(result.receipt, query_plan_hash=validated.plan_hash())
+        return replace(result, receipt=receipt)
     municipality = _population_dataset_plan_filters(validated.filters).get("geography")
     if municipality is None:
         raise QueryPlanValidationError("Plan missing required filter: municipality")
@@ -294,5 +323,6 @@ __all__ = [
     "canonicalize_plan",
     "execute_query_plan",
     "plan_from_population_question",
+    "plan_from_rate_question",
     "validate_query_plan",
 ]

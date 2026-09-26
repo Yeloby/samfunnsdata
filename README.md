@@ -10,6 +10,7 @@ antagelser om store deler av det offentlige datagrunnlaget.
 
 ## Hva programmet kan gjøre i dag
 
+- Se Norges Banks styringsrente og utviklingen i prosentpoeng
 - Se befolkningsutvikling i en kommune over tid
 - Sammenligne kommuner etter samme mål og samme tidsfilter
 - Søk i en lokal katalog over offentlige datasett
@@ -23,6 +24,8 @@ antagelser om store deler av det offentlige datagrunnlaget.
 samfunnsdata population Trondheim --since 2010
 samfunnsdata compare Trondheim Bergen --since 2010
 samfunnsdata search "befolkning"
+samfunnsdata rate
+samfunnsdata rate --since 2015 --receipt rente.receipt.json
 ```
 
 Dette er reelle kommandoer i prosjektet. De viser hvordan Samfunnsdata bruker en
@@ -35,6 +38,7 @@ Samfunnsdata støtter i dag et avgrenset, men tydelig utvalg av norske offentlig
 kilder og analyser:
 
 - SSB: befolkningsdata, sammenligninger og datakatalog
+- Norges Bank: styringsrente, siste publiserte observasjon og historikk
 - NAV: registrerte helt ledige
 - Valgdirektoratet: partivalgssammenligninger der programmet faktisk har
   implementert støtten
@@ -69,7 +73,7 @@ datasettlandskap. Det omfatter blant annet:
 - Kartverket / Geonorge
 - MET Norway / Frost
 - Statens vegvesen / NVDB / Trafikkdata
-- Norges Bank
+- flere datasett fra Norges Bank
 - NVE
 - Brønnøysundregistrene
 - Sokkeldirektoratet
@@ -120,6 +124,10 @@ etterprøvbare svar som er tydelig knyttet til en reell datakilde.
 Det er ikke et løfte om å støtte alle offentlige data eller å automatisere alt fra
 alle myndigheter. Det er et arbeid mot mer forståelige, mer åpne og mer
 etterprøvbare analyser innenfor et avgrenset og ryddig sett av datasett.
+
+Styringsrenten vises med kildens observasjonsdato og enhet. I GUI kan du skrive
+«Hva er styringsrenta?» eller «Vis styringsrenten siden 2015».
+Se [styringsrente og begrensninger](docs/norges-bank.md) for detaljer.
 
 Se [docs/architecture.md](docs/architecture.md) for mer om arkitekturen, og
 [docs/privacy.md](docs/privacy.md) for personvern og nettverksmodell.

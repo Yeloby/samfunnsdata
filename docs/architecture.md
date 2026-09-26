@@ -59,7 +59,7 @@ Grafen har hull ved manglende/statusmerkede punkter, mens CSV beholder
 originalverdier og status. Valgsammenligning bruker felles valgår og avviser
 manglende/statusmerkede endepunkter; dette er ikke endret i D.
 
-`AnalysisResult.schema_version` er fast `"1"` i dagens implementasjon. `DataReceipt.schema_version` har standardverdi `"2"`, og koden i `results.py` godtar både `"1"` og `"2"` ved lesing, men avviser andre verdier. Adapter-/beregningskontrakten identifiseres med `ssb-population/1`, og appversjonen registreres. Ukjente skjemaversjoner avvises ved innlesing. Brudd i feltenes betydning eller struktur krever ny versjon og eksplisitt lesestøtte.
+`AnalysisResult.schema_version` er fast `"1"` i dagens implementasjon. `DataReceipt.schema_version` har standardverdi `"2"`, og koden i `results.py` godtar `"1"` og `"2"` for befolkning og `"3"` for tidsserier fra milepæl I, men avviser andre verdier. Adapter-/beregningskontrakten identifiseres med `ssb-population/1`, og appversjonen registreres. Ukjente skjemaversjoner avvises ved innlesing. Brudd i feltenes betydning eller struktur krever ny versjon og eksplisitt lesestøtte.
 
 `DataReceipt` har kilde, måltall/enhet, serier, strukturerte transformasjoner,
 advarsler og brukstidspunkt. Stegene beskriver kommunevalg, lokal periodeavgrensning,
@@ -140,8 +140,8 @@ at schemaversionen er støttet, at datasettet faktisk finnes, at det er merket s
 forventede dimensjoner med gyldige verdier. En plan kan ikke bli et kjørbart
 program bare fordi en oppdaget SSB-tabell ser relevant ut i metadata.
 
-Planutføreren er foreløpig avgrenset til `ssb-07459-population` med
-`lookup`. Andre støttede datasett bruker fortsatt sine egne analyseveier.
+Planutføreren støtter `ssb-07459-population` med `lookup` og
+`norges-bank-policy-rate` med `latest`/`history`. Andre støttede datasett bruker fortsatt sine egne analyseveier.
 Ikke-tomme `grouping`/`ordering` og en satt `limit` avvises fordi utføreren
 ikke implementerer dem. Ukjente felt og feil JSON-typer avvises; år og
 skjemaversjon må være heltall, ikke tekst, desimaltall eller boolske verdier.
@@ -167,3 +167,28 @@ fortsatt utsatt. DuckDB er allerede deklarert som avhengighet, men brukes ikke
 som nytt lager i dette prosjektet.
 Se [personvern](privacy.md) for faktisk nettverks- og lokal lagringsatferd og
 [README.md](../README.md) for prosjektets publiserte bruksscenarioer.
+
+
+## Milepæl I: Norges Bank
+
+Norges Bank bruker samme SourceRegistry/DatasetRegistry, nettverksgrense,
+JsonCache, QueryPlan og AnalysisResult/DataReceipt. En eksplisitt lokal gren i
+QueryPlan velger `rates.analyze_rate`; katalogens adaptertekst kjøres aldri.
+`latest` krever tomt filter, `history` tillater bare valgfritt heltall `since`
+(1–9999). Ukjente felt, URL-er og uimplementerte valg avvises før kildekontakt.
+Planlegging, validering og hashing for rentedata er nettverksfrie.
+
+Den eksisterende kommuneformen beholdes for befolkning, inkludert kvittering
+v1/v2 og beregningene. Kvittering v3 bruker `TimeSeries`, `SeriesSelection`,
+`SeriesFacts` og `TimeObservation` i samme resultatkontrakt. Datoer har egne
+periodefelt; renter presses ikke inn i kommune-/innbyggertallfelter.
+`TimeObservation` bevarer CALC_METHOD separat fra OBS_STATUS. V3 leses eksplisitt;
+ukjente versjoner og feil serietype for valgt versjon avvises. Befolkningens
+wireformat er uendret. AnalysisResult beholder versjon 1 og oppgir tabellhint.
+
+GUI-spørsmål går via QueryPlan i eksisterende arbeidstråd. Samme generasjonsvern
+beskytter resultater, kvittering og eksport; matplotlib beholder prosesslåsen.
+CLI `rate` bruker samme tjeneste og presentasjon. Renteendring beregnes i
+prosentpoeng med faktiske endepunkter, uten prosentvis endring eller interpolasjon.
+[API-kontrakten](norges-bank.md) beskriver offisiell dokumentasjon, semantikk,
+cache, begrensninger og livekontroll. Ingen nye avhengigheter er lagt til.

@@ -29,6 +29,9 @@ class Source:
 
 
 SOURCES = (
+    Source("norges_bank", "Norges Bank", "https://www.norges-bank.no",
+           provider="norges_bank",
+           official_reference="https://www.norges-bank.no/tema/Statistikk/apne-data/"),
     Source(
         "ssb",
         "Statistisk sentralbyrå",
@@ -518,6 +521,26 @@ DATASETS = (
         ),
         aliases=("legemidler", "legemiddel", "medisiner", "ATC"),
     ),
+    Dataset(
+        id="norges-bank-policy-rate", provider="norges_bank",
+        title="Styringsrente", topic="economy / interest rates", source="Norges Bank",
+        geography=("Norway",), time_resolution="business_day", dimensions=("since",),
+        unit="prosent", description="Norges Banks styringsrente: siste observasjon og historikk.",
+        period="Tilgjengelige publiserte virkedager",
+        measures=("policy_rate",),
+        definition="IR/B.KPRA.SD.R: styringsrente, virkedag, slutten av dagen. Rente i prosent.",
+        limitations=("Ingen interpolasjon eller utfylling av dager. Ingen prognose eller månedsgjennomsnitt.",
+                     "Siste observasjon vises med dato; cache kan være eldre enn kilden."),
+        aliases=("styringsrente", "styringsrenten", "styringsrenta"),
+        support=SupportStatus.SUPPORTED,
+        adapter="samfunnsdata.providers.norway.norges_bank:policy_rate",
+        interfaces=("python", "cli", "gui"), table_id="IR/B.KPRA.SD.R",
+        source_url="https://www.norges-bank.no/en/topics/statistics/Key-policy-rate-daily/",
+        access_url="https://data.norges-bank.no/api/data/IR/B.KPRA.SD.R", format="csv",
+        methodology=("latest: siste publiserte observasjon; history: publiserte observasjoner fra valgt år.",
+                     "Endring mellom faktiske endepunkter i prosentpoeng."),
+    ),
+
     Dataset(
         id="ssb-07459-population",
         support=SupportStatus.SUPPORTED,

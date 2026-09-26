@@ -7,12 +7,12 @@
   {
     "id": "capabilities",
     "title": "Hva kan programmet nå?",
-    "text": "GUI-en viser kommunebefolkning og kommunesammenligninger fra SSB, partiresultater og sammenligninger ved stortings- og kommunevalg, samt NAVs registrerte helt ledige. Programmet har også en lokal katalog over datasett og en eksplisitt QueryPlan-validering som ser etter dataset støttestatus, gyldige mål og tillatte filter før en analyse kjøres. FHI-legemidler er støttet gjennom Python/API, men ikke som spørsmål eller analyser i GUI-en. Katalogen er foreløpig et lite utvalg, ikke en komplett oversikt over offentlige data."
+    "text": "GUI-en viser kommunebefolkning og kommunesammenligninger fra SSB, partiresultater og sammenligninger ved stortings- og kommunevalg, samt NAVs registrerte helt ledige. Programmet har også en lokal katalog over datasett og en eksplisitt QueryPlan-validering som ser etter dataset støttestatus, gyldige mål og tillatte filter før en analyse kjøres. FHI-legemidler er støttet gjennom Python/API, men ikke som spørsmål eller analyser i GUI-en. Katalogen er foreløpig et lite utvalg, ikke en komplett oversikt over offentlige data. Norges Banks styringsrente støttes i GUI og CLI med siste publiserte observasjon og historikk."
   },
   {
     "id": "questions",
     "title": "Slik stiller du spørsmål",
-    "text": "Prøv «Vis befolkningen i Trondheim siden 2000», «Sammenlign Trondheim og Bergen siden 2000», «Vis FrPs stortingsvalgresultater i Trondheim siden 2009» eller «Hvordan har arbeidsledigheten i Trondheim utviklet seg?». Parseren kjenner bestemte formuleringer; den kan ikke besvare vilkårlige spørsmål. Legemiddelspørsmål er ikke koblet til parseren ennå."
+    "text": "Prøv «Vis befolkningen i Trondheim siden 2000», «Sammenlign Trondheim og Bergen siden 2000», «Vis FrPs stortingsvalgresultater i Trondheim siden 2009» eller «Hvordan har arbeidsledigheten i Trondheim utviklet seg?». Parseren kjenner bestemte formuleringer; den kan ikke besvare vilkårlige spørsmål. Legemiddelspørsmål er ikke koblet til parseren ennå. For styringsrenten: «Hva er styringsrenta?», «Vis styringsrenten siden 2015» eller «Hvordan har styringsrenta utviklet seg?». Bestemte datoer, månedsgjennomsnitt og prognoser støttes ikke."
   },
   {
     "id": "browse",
@@ -32,12 +32,12 @@
   {
     "id": "methods",
     "title": "Datakilder, metode og beregninger",
-    "text": "Kildedata er tallene myndigheten leverer. Samfunnsdata kan beregne forskjell mellom to tidspunkter, prosentvis endring og forskjeller i prosentpoeng. Prosentvis endring er (siste − første) / første × 100; dette er ikke definert når første er null. En tolkning av hvorfor tallene endres er noe annet enn en beregning. Samvariasjon dokumenterer ikke årsak. Kilde- og metodetekst i dagens resultater er analysespesifikk; fullstendige datakvitteringer for alle analyser er planlagt."
+    "text": "Kildedata er tallene myndigheten leverer. Samfunnsdata kan beregne forskjell mellom to tidspunkter, prosentvis endring og forskjeller i prosentpoeng. Prosentvis endring er (siste − første) / første × 100; dette er ikke definert når første er null. En tolkning av hvorfor tallene endres er noe annet enn en beregning. Samvariasjon dokumenterer ikke årsak. Kilde- og metodetekst i dagens resultater er analysespesifikk; fullstendige datakvitteringer for alle analyser er planlagt. Styringsrenten viser publiserte virkedagsobservasjoner ved slutten av dagen i prosent. Endring oppgis i prosentpoeng. Ingen dager fylles inn, og siste observasjon vises med dato."
   },
   {
     "id": "export",
     "title": "Rådata og eksport",
-    "text": "Etter en vellykket analyse blir Data → Rådata og Fil → Eksporter CSV tilgjengelige. Rådatavisningen viser observasjonene valgt for analysen, ikke nødvendigvis hele originalresponsen. CSV-eksporten inneholder de valgte resultatkolonnene; den inneholder foreløpig ikke en full datakvittering eller all kildemetadata. Eksport skjer til en lokal fil du velger. Befolkningsresultater har «Vis datakvittering» og «Eksporter kvittering (JSON)». Velg for eksempel population.csv og population.receipt.json som separate filer. Ukjent opprinnelig hentetid er ukjent; brukstid er ikke hentetid."
+    "text": "Etter en vellykket analyse blir Data → Rådata og Fil → Eksporter CSV tilgjengelige. Rådatavisningen viser observasjonene valgt for analysen, ikke nødvendigvis hele originalresponsen. CSV-eksporten inneholder de valgte resultatkolonnene; den inneholder foreløpig ikke en full datakvittering eller all kildemetadata. Eksport skjer til en lokal fil du velger. Befolkningsresultater har «Vis datakvittering» og «Eksporter kvittering (JSON)». Velg for eksempel population.csv og population.receipt.json som separate filer. Ukjent opprinnelig hentetid er ukjent; brukstid er ikke hentetid. Styringsrenten har også rådata, CSV og datakvittering som JSON."
   },
   {
     "id": "limits",
@@ -52,6 +52,6 @@
   {
     "id": "privacy",
     "title": "Personvern og nettverk",
-    "text": "GUI-spørsmål tolkes lokalt. Valgte dataforespørsler sendes til kildene når nødvendig; CLI search sender selve søketeksten til SSB bare i online-modus og kun når lokal cache ikke gir treff. Programmet støtter også en eksplisitt cache-only-modus som forbyr alle nettverkskall. Kilden kan se IP-adresse og forespørsel. Ingen telemetri er implementert. Cache og eksporter lagres lokalt uten kryptering fra programmet og kan vise hvilke utvalg du undersøker. Eldre cachekopier og terminalhistorikk kan også finnes. Datakvitteringen inneholder utvalg, observasjoner og brukstidspunkt."
+    "text": "GUI-spørsmål tolkes lokalt. Valgte dataforespørsler sendes til kildene når nødvendig; CLI search sender selve søketeksten til SSB bare i online-modus og kun når lokal cache ikke gir treff. Programmet støtter også en eksplisitt cache-only-modus som forbyr alle nettverkskall. Kilden kan se IP-adresse og forespørsel. Ingen telemetri er implementert. Cache og eksporter lagres lokalt uten kryptering fra programmet og kan vise hvilke utvalg du undersøker. Eldre cachekopier og terminalhistorikk kan også finnes. Datakvitteringen inneholder utvalg, observasjoner og brukstidspunkt. Norges Bank mottar bare fast serie og strukturerte utvalg; spørsmålsteksten forblir lokal. Rentedata hentes på nytt i online-modus; cache-only bruker samme lagrede utvalg eller feiler uten nettverk."
   }
 ]

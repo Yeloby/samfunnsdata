@@ -60,15 +60,37 @@ def main():
         help="Lagre sammenligningen som PNG-graf",
     )
 
-    for command_parser in (population, compare):
+    rate = sub.add_parser("rate", help="Vis Norges Banks styringsrente")
+    rate_selection = rate.add_mutually_exclusive_group()
+    rate_selection.add_argument("--since", type=int, help="Vis historikk fra og med året")
+    rate_selection.add_argument("--history", action="store_true", help="Vis all tilgjengelig historikk")
+
+    for command_parser in (population, compare, rate):
         command_parser.add_argument("--receipt", metavar="PATH",
                                     help="Lagre datakvittering som separat JSON-fil")
 
-    for command_parser in (search, population, compare):
+    for command_parser in (search, population, compare, rate):
         command_parser.add_argument("--cache-only", action="store_true", default=argparse.SUPPRESS,
                                     help="Bruk bare lokal cache; ingen HTTP-kall")
     args = parser.parse_args()
     network.set_mode(network.NetworkMode.CACHE_ONLY if args.cache_only else network.NetworkMode.ONLINE)
+
+    if args.command == "rate":
+        from .query_plan import execute_query_plan, plan_from_rate_question
+        from .questions import RateQuestion
+        from .rate_presentation import raw_text, summary
+
+        operation = "history" if args.history or args.since is not None else "latest"
+        try:
+            result = execute_query_plan(plan_from_rate_question(RateQuestion(operation, args.since)))
+        except ValueError as error:
+            parser.error(str(error))
+        print(summary(result))
+        if operation == "history":
+            print(raw_text([(s.name, s) for s in result.series])[0])
+        if args.receipt:
+            export_receipt(result.receipt, args.receipt)
+        return 0
 
     if args.command == "search":
         client = SsbClient()

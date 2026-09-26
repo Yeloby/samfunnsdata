@@ -16,7 +16,7 @@ import pandas as pd
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from . import population_presentation
+from . import population_presentation, rate_presentation
 from .analysis import (
     align_election_series,
     format_number,
@@ -81,6 +81,29 @@ def population(token, place, compare_place, since):
         view["chart"] = render_chart(fig)
     token.checkpoint()
     return view
+
+
+def rate_question(token, question):
+    from .query_plan import execute_query_plan, plan_from_rate_question
+
+    result = execute_query_plan(plan_from_rate_question(question), checkpoint=token.checkpoint)
+    series = result.series[0]
+    with chart_session(token):
+        fig, ax = plt.subplots(figsize=(12, 6))
+        # Points only: do not visually interpolate non-published days.
+        ax.plot(pd.to_datetime([o.period for o in series.source_observations]),
+                [o.usable_value if o.usable_value is not None else float("nan")
+                 for o in series.source_observations], linestyle="none", marker=".")
+        ax.set_title(result.title)
+        ax.set_ylabel("Styringsrente (%)")
+        ax.set_xlabel("Observasjonsdato")
+        fig.tight_layout()
+        chart = render_chart(fig)
+    token.checkpoint()
+    return {"analysis_result": result, "status": result.title,
+            "source": "Kilde: Norges Bank · IR/B.KPRA.SD.R\n" + population_presentation.source_activity(result),
+            "result": (False, rate_presentation.summary(result)),
+            "series": [(series.name, series)], "kind": "rate", "chart": chart}
 
 
 def unemployment_question(token, question):
@@ -367,6 +390,9 @@ def raw_text(token, kind, series):
     token.checkpoint()
     lines = []
 
+    if kind == "rate":
+        return rate_presentation.raw_text(series)
+
     if kind == "population" and series and isinstance(series[0][1], PopulationSeries):
         return population_presentation.raw_text(series)
 
@@ -449,6 +475,9 @@ def raw_text(token, kind, series):
 def export_csv(token, kind, series, path):
     token.checkpoint()
     frames = []
+
+    if kind == "rate":
+        return rate_presentation.export_csv(series, path, checkpoint=token.checkpoint)
 
     if kind == "population" and series and isinstance(series[0][1], PopulationSeries):
         return population_presentation.export_csv(series, path, checkpoint=token.checkpoint)
@@ -558,7 +587,8 @@ def export_csv(token, kind, series, path):
 
 def receipt_text(token, receipt):
     token.checkpoint()
-    text = population_presentation.receipt_text(receipt)
+    text = (receipt.to_json() if receipt.schema_version == "3"
+            else population_presentation.receipt_text(receipt))
     token.checkpoint()
     return text
 

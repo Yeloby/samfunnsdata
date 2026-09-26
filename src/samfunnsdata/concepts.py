@@ -64,6 +64,7 @@ TIME_TERMS = (
 )
 
 CONCEPTS = (
+    Concept("policy_rate", ("styringsrente", "styringsrenten", "styringsrenta"), "Norges Banks styringsrente."),
     Concept("population", POPULATION_TERMS, "Befolkningsspørsmål."),
     Concept("unemployment", UNEMPLOYMENT_TERMS, "Arbeidsledighet."),
     Concept("election", ELECTION_TERMS, "Valgresultat."),

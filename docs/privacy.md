@@ -1,8 +1,8 @@
 # Personvern og nettverk i dagens Samfunnsdata
 
 Spørsmål skrevet i GUI tolkes lokalt med programmets parser. De sendes ikke til
-en språkmodell. Utvalgte dataforespørsler går til dataleverandørene når de ikke
-finnes i lokal cache. Programmet har en eksplisitt `--cache-only`-modus som
+en språkmodell. Utvalgte dataforespørsler går til dataleverandørene ved behov; Norges Bank-data
+oppdateres ved hver analyse i online-modus. Programmet har en eksplisitt `--cache-only`-modus som
 forbyr alle nettverksforespørsler. **CLI-kommandoen `search` sender søketeksten
 til SSB bare når programmet er i online-modus og ingen lokal cache gir treff.**
 Det er derfor ikke riktig at alle spørsmål alltid forblir lokale.
@@ -12,6 +12,10 @@ Det er derfor ikke riktig at alle spørsmål alltid forblir lokale.
 - SSB: søketekst ved CLI-søk; kommunenavn slås opp lokalt i en hentet kodeliste.
   Befolkningskallet sender kommunekode, tabell 07459, måltall Personer1,
   aggregeringsvalg og alle år. `--since`/årsvalget filtreres lokalt.
+- Norges Bank: fast serie IR/B.KPRA.SD.R, CSV-format, språk og eventuelt
+  startdato eller valg av siste observasjon sendes til `data.norges-bank.no`.
+  Spørsmålstekst sendes aldri. ONLINE henter ferske rentedata ved hver analyse;
+  CACHE_ONLY leser tidligere lagret identisk utvalg uten HTTP, eller feiler.
 - NAV: programmet laster en CSV-fil; kommunen filtreres lokalt.
 - Valgdirektoratet: år og geografisk område inngår i API-kall; parti filtreres lokalt.
 - FHI (Python/API): tabell og valgte dimensjonskoder sendes til FHI.
@@ -78,3 +82,8 @@ Programmet har en liten, eksplisitt nettverks- og personvernpolicy for de
 støttede kildene, men den beskytter ikke mot en valgt nettverksforbindelse, en
 proxy, eller andre OS-/miljøregler. HTTPS skjuler ikke mot manglende godkjenning
 av kildens vertsnavn eller mot den faktiske publikumstrafikken på nettverket.
+
+Styringsrentens kvittering lagrer strukturert utvalg, kildedatoer, originalverdier,
+merknadskoder, beregninger, faktisk registrert hentetid og cache-/nettverksbruk.
+Spørsmålstekst, lokale cachebaner og autentiseringsdata lagres ikke i kvitteringen.
+Se [Norges Bank](norges-bank.md) for cacheformat og observasjonssemantikk.
