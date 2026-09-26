@@ -140,6 +140,15 @@ at schemaversionen er støttet, at datasettet faktisk finnes, at det er merket s
 forventede dimensjoner med gyldige verdier. En plan kan ikke bli et kjørbart
 program bare fordi en oppdaget SSB-tabell ser relevant ut i metadata.
 
+Planutføreren er foreløpig avgrenset til `ssb-07459-population` med
+`lookup`. Andre støttede datasett bruker fortsatt sine egne analyseveier.
+Ikke-tomme `grouping`/`ordering` og en satt `limit` avvises fordi utføreren
+ikke implementerer dem. Ukjente felt og feil JSON-typer avvises; år og
+skjemaversjon må være heltall, ikke tekst, desimaltall eller boolske verdier.
+Kommunealiasene `municipality`, `geography` og `place` støttes likt ved
+validering og kjøring, men flere aliaser i samme plan avvises som tvetydig.
+Planens opprinnelige alias beholdes i serialisering og kvitteringshash.
+
 Planer kan serialiseres med `to_json()`, parses tilbake med `from_json()`, og
 konsistent normaliseres før hashberegning. Hashen er deterministisk og brukes i
 kvitteringen som `query_plan_hash`, sammen med eksisterende proveniens og

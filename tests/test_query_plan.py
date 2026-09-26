@@ -188,3 +188,69 @@ def test_execute_query_plan_preserves_existing_population_result_semantics():
     assert result.receipt.source == baseline.receipt.source
     assert result.receipt.measure == baseline.receipt.measure
     assert result.receipt.series[0].derived_facts == baseline.receipt.series[0].derived_facts
+
+
+@pytest.mark.parametrize("overrides", [
+    {"grouping": ["year"]},
+    {"ordering": ["year"]},
+    {"limit": 1},
+    {"schema_version": True},
+    {"schema_version": 1.5},
+    {"schema_version": "1"},
+    {"filters": {"municipality": "5001", "year": True}},
+    {"filters": {"municipality": "5001", "year": 2024.5}},
+    {"filters": {"municipality": "5001", "year": "2024"}},
+    {"filters": {"municipality": None, "year": 2024}},
+    {"filters": {"municipality": ["5001"], "year": 2024}},
+    {"filters": {"municipality": "5001", "place": "Oslo", "year": 2024}},
+    {"filters": []},
+    {"grouping": "year"},
+    {"ordering": None},
+    {"unexpected": "ignored previously"},
+])
+def test_invalid_plans_fail_before_provider_access(monkeypatch, overrides):
+    def forbidden(*args, **kwargs):
+        pytest.fail("Invalid plan reached provider")
+
+    monkeypatch.setattr("samfunnsdata.query_plan.municipality_population", forbidden)
+    monkeypatch.setattr("samfunnsdata.query_plan.municipalities", forbidden)
+    with pytest.raises(QueryPlanValidationError):
+        execute_query_plan(_valid_population_plan(**overrides))
+
+
+@pytest.mark.parametrize("payload", ['[]', 'null', '42', '{', '{"dataset_id": null}'])
+def test_malformed_wire_plan_has_validation_error(payload):
+    with pytest.raises(QueryPlanValidationError):
+        QueryPlan.from_json(payload)
+
+
+@pytest.mark.parametrize("alias", ["municipality", "geography", "place"])
+def test_all_municipality_aliases_execute(monkeypatch, alias):
+    from types import SimpleNamespace
+
+    import pandas as pd
+
+    calls = []
+
+    def provider(place):
+        calls.append(place)
+        return SimpleNamespace(name=place, code="5001"), pd.DataFrame({
+            "Tid_code": ["2024", "2025"], "value": [100, 110],
+        })
+
+    monkeypatch.setattr("samfunnsdata.query_plan.municipality_population", provider)
+    plan = QueryPlan.from_json(_valid_population_plan(
+        filters={alias: "Trondheim", "year": 2024},
+    ))
+    result = execute_query_plan(plan)
+    assert len(calls) == 1
+    assert calls[0].casefold() == "trondheim"
+    assert result.receipt.query_plan_hash == plan.plan_hash()
+
+
+def test_other_supported_dataset_has_no_population_executor():
+    dataset = get_dataset("ssb-07459-population")
+    other = {**dataset.__dict__, "id": "other-supported"}
+    with pytest.raises(QueryPlanValidationError, match="executor"):
+        validate_query_plan(_valid_population_plan(dataset_id="other-supported"),
+                            dataset_override=other)

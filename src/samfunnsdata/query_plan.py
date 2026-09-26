@@ -68,45 +68,51 @@ class QueryPlan:
 
     @classmethod
     def from_json(cls, payload: str | dict[str, Any]) -> QueryPlan:
-        if isinstance(payload, str):
-            data = json.loads(payload)
-        elif isinstance(payload, dict):
-            data = payload
-        else:
-            raise TypeError("QueryPlan JSON must be a JSON string or object.")
-        try:
-            return QueryPlan(
-                dataset_id=str(data["dataset_id"]),
-                operation=str(data.get("operation", "lookup")),
-                filters=dict(data.get("filters") or {}),
-                measure=data.get("measure"),
-                grouping=tuple(data.get("grouping") or ()),
-                ordering=tuple(data.get("ordering") or ()),
-                limit=data.get("limit"),
-                schema_version=int(data.get("schema_version", 1)),
-            )
-        except KeyError as exc:
-            raise QueryPlanValidationError("Ugyldig plan uten dataset_id.") from exc
+        data = canonicalize_plan(payload)
+        return cls(**{**data, "grouping": tuple(data["grouping"]),
+                      "ordering": tuple(data["ordering"])})
 
 
 def canonicalize_plan(plan: QueryPlan | dict[str, Any] | str) -> dict[str, Any]:
     if isinstance(plan, QueryPlan):
-        return plan.to_dict()
-    if isinstance(plan, str):
-        data = json.loads(plan)
-    elif isinstance(plan, dict):
-        data = plan
+        data = {key: getattr(plan, key) for key in plan.__dataclass_fields__}
+    elif isinstance(plan, str):
+        try:
+            data = json.loads(plan)
+        except (ValueError, TypeError) as exc:
+            raise QueryPlanValidationError("Invalid QueryPlan JSON.") from exc
     else:
-        raise TypeError("Invalid QueryPlan object.")
+        data = plan
+    if not isinstance(data, dict):
+        raise QueryPlanValidationError("QueryPlan must be a JSON object.")
+    fields = {"schema_version", "dataset_id", "operation", "filters", "measure",
+              "grouping", "ordering", "limit"}
+    if set(data) - fields:
+        raise QueryPlanValidationError("Unknown QueryPlan fields.")
+    for key in ("dataset_id", "operation", "measure"):
+        value = data.get(key, "lookup" if key == "operation" else None)
+        if not isinstance(value, str) or not value.strip():
+            raise QueryPlanValidationError(f"Plan must include a non-empty {key}.")
+    if type(data.get("schema_version", 1)) is not int:
+        raise QueryPlanValidationError("schema_version must be an integer.")
+    if not isinstance(data.get("filters", {}), dict):
+        raise QueryPlanValidationError("filters must be an object.")
+    for key in ("grouping", "ordering"):
+        value = data.get(key, ())
+        if not isinstance(value, (list, tuple)) or any(not isinstance(item, str) for item in value):
+            raise QueryPlanValidationError(f"{key} must be an array of strings.")
+    limit = data.get("limit")
+    if limit is not None and (type(limit) is not int or limit <= 0):
+        raise QueryPlanValidationError("limit must be a positive integer.")
     return {
-        "schema_version": int(data.get("schema_version", 1)),
-        "dataset_id": str(data["dataset_id"]),
-        "operation": str(data.get("operation", "lookup")),
-        "filters": dict(data.get("filters") or {}),
-        "measure": data.get("measure"),
-        "grouping": list(data.get("grouping") or ()),
-        "ordering": list(data.get("ordering") or ()),
-        "limit": data.get("limit"),
+        "schema_version": data.get("schema_version", 1),
+        "dataset_id": data["dataset_id"],
+        "operation": data.get("operation", "lookup"),
+        "filters": dict(data.get("filters", {})),
+        "measure": data["measure"],
+        "grouping": list(data.get("grouping", ())),
+        "ordering": list(data.get("ordering", ())),
+        "limit": limit,
     }
 
 
@@ -115,6 +121,8 @@ def _population_dataset_plan_filters(filters: dict[str, Any]) -> dict[str, Any]:
     aliases = {"municipality": "geography", "place": "geography", "geography": "geography", "year": "year"}
     for key, value in filters.items():
         normalized = aliases.get(str(key), str(key))
+        if normalized in canonical:
+            raise QueryPlanValidationError(f"Duplicate filter dimension: {normalized}")
         canonical[normalized] = value
     return canonical
 
@@ -145,6 +153,12 @@ def validate_query_plan(plan: QueryPlan | dict[str, Any] | str, *, dataset_overr
         raise QueryPlanValidationError(
             f"Dataset {getattr(dataset, 'id', canonical['dataset_id'])} is not SUPPORTED for execution."
         )
+
+    if canonical["dataset_id"] != "ssb-07459-population":
+        raise QueryPlanValidationError("No query plan executor for this dataset.")
+    for key in ("grouping", "ordering", "limit"):
+        if canonical[key] not in ([], None):
+            raise QueryPlanValidationError(f"Unsupported plan option: {key}")
 
     operation = canonical["operation"]
     if operation != "lookup":
@@ -178,13 +192,12 @@ def validate_query_plan(plan: QueryPlan | dict[str, Any] | str, *, dataset_overr
 
     if "year" in normalized_filters:
         raw_year = normalized_filters["year"]
-        try:
-            normalized_filters["year"] = int(raw_year)
-        except (TypeError, ValueError) as exc:
-            raise QueryPlanValidationError("Filter 'year' must be an integer.") from exc
+        if type(raw_year) is not int:
+            raise QueryPlanValidationError("Filter 'year' must be an integer.")
 
-    if "geography" in normalized_filters and not str(normalized_filters["geography"]).strip():
-        raise QueryPlanValidationError("Filter 'municipality' must be set.")
+    geography = normalized_filters.get("geography")
+    if not isinstance(geography, str) or not geography.strip():
+        raise QueryPlanValidationError("Filter 'municipality' must be a non-empty string.")
 
     return QueryPlan(
         dataset_id=getattr(dataset, "id", canonical["dataset_id"]),
@@ -246,7 +259,7 @@ def plan_from_population_question(question) -> QueryPlan:
 
 def execute_query_plan(plan: QueryPlan | dict[str, Any] | str):
     validated = validate_query_plan(plan)
-    municipality = validated.filters.get("municipality") or validated.filters.get("geography")
+    municipality = _population_dataset_plan_filters(validated.filters).get("geography")
     if municipality is None:
         raise QueryPlanValidationError("Plan missing required filter: municipality")
 
