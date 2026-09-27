@@ -58,6 +58,53 @@ def parse_exchange_question(text: str) -> ExchangeQuestion:
 
 
 @dataclass(frozen=True)
+class TrafficQuestion:
+    road_reference: str
+    operation: str = "latest"
+    since: int | None = None
+
+
+def parse_traffic_question(text: str) -> TrafficQuestion:
+    text = normalize_norwegian_text(text).rstrip("?.!").strip()
+    if not text:
+        raise ValueError("Skriv inn et spørsmål om vegtrafikk.")
+
+    year_match = re.search(r"\b(?:siden|fra)\s+(\d{4})\b", text, flags=re.IGNORECASE)
+    since = int(year_match.group(1)) if year_match else None
+
+    cleaned = re.sub(r"\b(?:siden|fra)\s+\d{4}\b", "", text, flags=re.IGNORECASE).strip(" .?")
+    if not cleaned:
+        raise ValueError("Jeg trenger en vegreferanse som E6 eller E39.")
+
+    cleaned = re.sub(
+        r"^(?:hva\s+er|vis|hvordan\s+har|hvor\s+mye\s+trafikk\s+er\s+det|trafikken|trafikkutviklingen|trafikk|ådt|adt)\s*",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    ).strip()
+    cleaned = re.sub(r"^(?:på|i|for|til)\s+", "", cleaned, flags=re.IGNORECASE).strip()
+
+    road_ref_match = re.search(
+        r"\b(?:E|Rv|Fv|[A-Za-zÆØÅ]{1,3})\s*\d+[A-Za-z0-9.-]*\b",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+    if road_ref_match is None:
+        raise ValueError("Jeg finner ikke en gyldig vegreferanse i spørsmålet.")
+
+    road_reference = road_ref_match.group(0).strip().upper()
+    road_reference = road_reference.replace("Å", "A").replace("Ø", "O").replace("Æ", "AE")
+    is_history = (
+        "utviklet seg" in cleaned.casefold()
+        or "trafikkutviklingen" in cleaned.casefold()
+        or "hvordan har" in cleaned.casefold()
+        or since is not None
+    )
+    operation = "history" if is_history else "latest"
+    return TrafficQuestion(road_reference=road_reference, operation=operation, since=since)
+
+
+@dataclass(frozen=True)
 class PopulationQuestion:
     place: str
     compare_place: str | None = None
@@ -511,6 +558,8 @@ def parse_election_question(text: str) -> ElectionQuestion:
 def parse_question(text: str):
     if "policy_rate" in find_concepts(text):
         return parse_rate_question(text)
+    if "traffic" in find_concepts(text):
+        return parse_traffic_question(text)
     parsers = [
         parse_exchange_question,
         parse_unemployment_question,

@@ -154,7 +154,12 @@ def validate_query_plan(plan: QueryPlan | dict[str, Any] | str, *, dataset_overr
             f"Dataset {getattr(dataset, 'id', canonical['dataset_id'])} is not SUPPORTED for execution."
         )
 
-    if canonical["dataset_id"] not in {"ssb-07459-population", "norges-bank-policy-rate", "norges-bank-exchange-rate"}:
+    if canonical["dataset_id"] not in {
+        "ssb-07459-population",
+        "norges-bank-policy-rate",
+        "norges-bank-exchange-rate",
+        "statens-vegvesen-traffic-volume",
+    }:
         raise QueryPlanValidationError("No query plan executor for this dataset.")
     for key in ("grouping", "ordering", "limit"):
         if canonical[key] not in ([], None):
@@ -193,6 +198,20 @@ def validate_query_plan(plan: QueryPlan | dict[str, Any] | str, *, dataset_overr
             validate_selection(canonical["operation"], canonical["filters"].get("since"))
         except ValueError as exc:
             raise QueryPlanValidationError(str(exc)) from exc
+        return QueryPlan.from_json(canonical)
+
+    if canonical["dataset_id"] == "statens-vegvesen-traffic-volume":
+        if canonical["measure"] != "traffic_volume" or canonical["measure"] not in dataset.measures:
+            raise QueryPlanValidationError("Unknown measure for traffic volume.")
+        if set(canonical["filters"]) - {"road_reference", "since"}:
+            raise QueryPlanValidationError("Unknown traffic filter.")
+        road_reference = canonical["filters"].get("road_reference")
+        if not isinstance(road_reference, str) or not road_reference.strip():
+            raise QueryPlanValidationError("road_reference must be a non-empty string.")
+        if "since" in canonical["filters"] and canonical["filters"]["since"] is not None:
+            since = canonical["filters"]["since"]
+            if type(since) is not int or since < 1900:
+                raise QueryPlanValidationError("since must be an integer year from 1900 onwards.")
         return QueryPlan.from_json(canonical)
 
     operation = canonical["operation"]
@@ -308,6 +327,18 @@ def plan_from_exchange_question(question):
     ))
 
 
+def plan_from_traffic_question(question):
+    if isinstance(question, str):
+        from .questions import parse_traffic_question
+        question = parse_traffic_question(question)
+    filters = {"road_reference": question.road_reference}
+    if question.since is not None:
+        filters["since"] = question.since
+    return validate_query_plan(QueryPlan(
+        "statens-vegvesen-traffic-volume", question.operation, filters, "traffic_volume",
+    ))
+
+
 def execute_query_plan(plan: QueryPlan | dict[str, Any] | str, *, checkpoint=lambda: None):
     validated = validate_query_plan(plan)
     checkpoint()
@@ -321,6 +352,17 @@ def execute_query_plan(plan: QueryPlan | dict[str, Any] | str, *, checkpoint=lam
         from .rates import analyze_rate
 
         result = analyze_rate(validated.operation, validated.filters.get("since"), checkpoint=checkpoint)
+        receipt = replace(result.receipt, query_plan_hash=validated.plan_hash())
+        return replace(result, receipt=receipt)
+    if validated.dataset_id == "statens-vegvesen-traffic-volume":
+        from .providers.norway.vegvesen import traffic_volume
+
+        result = traffic_volume(
+            validated.filters["road_reference"],
+            validated.operation,
+            validated.filters.get("since"),
+            checkpoint=checkpoint,
+        )
         receipt = replace(result.receipt, query_plan_hash=validated.plan_hash())
         return replace(result, receipt=receipt)
     municipality = _population_dataset_plan_filters(validated.filters).get("geography")
@@ -360,5 +402,6 @@ __all__ = [
     "plan_from_exchange_question",
     "plan_from_population_question",
     "plan_from_rate_question",
+    "plan_from_traffic_question",
     "validate_query_plan",
 ]

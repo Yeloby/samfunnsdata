@@ -30,8 +30,21 @@ HOSTS = {
     "nav": frozenset({"www.nav.no"}),
     "elections": frozenset({"valgresultat.no"}),
     "fhi": frozenset({"statistikk-data.fhi.no"}),
+    "vegvesen": frozenset({
+        "www.vegvesen.no",
+        "nvdbapiles-v3.atlas.vegvesen.no",
+        "trafikkdata-api.atlas.vegvesen.no",
+        "trafikkdata.atlas.vegvesen.no",
+    }),
 }
-LABELS = {"norges_bank": "Norges Bank", "ssb": "SSB", "nav": "NAV", "elections": "Valgdirektoratet", "fhi": "FHI"}
+LABELS = {
+    "norges_bank": "Norges Bank",
+    "ssb": "SSB",
+    "nav": "NAV",
+    "elections": "Valgdirektoratet",
+    "fhi": "FHI",
+    "vegvesen": "Statens vegvesen",
+}
 _mode = NetworkMode.ONLINE
 _mode_lock = Lock()
 _records = ContextVar("network_records", default=None)

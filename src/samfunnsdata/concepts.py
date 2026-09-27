@@ -44,6 +44,22 @@ ELECTION_TERMS = (
     "oppslutning",
 )
 
+TRAFFIC_TERMS = (
+    "trafikk",
+    "trafikken",
+    "trafikkutvikling",
+    "trafikkmengde",
+    "ådt",
+    "adt",
+    "årsdøgntrafikk",
+    "aadt",
+    "kjøretøy",
+    "veitrafikk",
+    "tellepunkt",
+    "trafikkregistreringspunkt",
+    "målestasjon",
+)
+
 COMPARISON_TERMS = (
     "sammenlign",
     "sammenligne",
@@ -69,6 +85,7 @@ CONCEPTS = (
     Concept("unemployment", UNEMPLOYMENT_TERMS, "Arbeidsledighet."),
     Concept("election", ELECTION_TERMS, "Valgresultat."),
     Concept("comparison", COMPARISON_TERMS, "Sammenligning."),
+    Concept("traffic", TRAFFIC_TERMS, "Vegtrafikk og ÅDT."),
     Concept("time", TIME_TERMS, "Tidsuttrykk."),
 )
 

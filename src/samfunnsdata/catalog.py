@@ -64,6 +64,14 @@ SOURCES = (
         official_reference="https://valgresultat.no",
         discovery_capable=False,
     ),
+    Source(
+        "vegvesen",
+        "Statens vegvesen",
+        "https://trafikkdata.atlas.vegvesen.no",
+        provider="vegvesen",
+        official_reference="https://trafikkdata.atlas.vegvesen.no",
+        discovery_capable=False,
+    ),
 )
 
 
@@ -681,6 +689,32 @@ DATASETS = (
             "ledighet",
             "helt ledige",
         ),
+    ),
+    Dataset(
+        id="statens-vegvesen-traffic-volume",
+        support=SupportStatus.SUPPORTED,
+        adapter="samfunnsdata.providers.norway.vegvesen:traffic_volume",
+        interfaces=("python", "cli", "gui"),
+        source_url="https://trafikkdata.atlas.vegvesen.no",
+        access_url="https://trafikkdata.atlas.vegvesen.no/graphql",
+        format="json",
+        provider="vegvesen",
+        title="Vegtrafikk / ÅDT",
+        topic="transport / traffic",
+        source="Statens vegvesen",
+        geography=("road_reference",),
+        time_resolution="year",
+        dimensions=("road_reference", "since"),
+        unit="vehicles_per_day",
+        description="ÅDT-verdier for kjente vegreferanser med offisiell statens vegvesen-semantikk.",
+        period="Publiserte ÅDT-/årsverdier",
+        measures=("traffic_volume",),
+        definition="Offisiell vegtrafikkmål for valgt vegreferanse; råkvalitet og beregningsmetode beholdes separat.",
+        limitations=(
+            "Sikkerst som historiske ÅDT-verdier for en konkret vegreferanse eller målepunkt.",
+            "E6/E39 alene er ikke nok til å velge en stub eller et ukjent segment uten ekstra identifikator.",
+        ),
+        aliases=("trafikk", "trafikkmengde", "ådt", "adt", "vegtrafikk", "E6", "E39"),
     ),
 )
 
