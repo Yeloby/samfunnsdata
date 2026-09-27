@@ -16,7 +16,7 @@ import pandas as pd
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from . import population_presentation, rate_presentation
+from . import exchange_presentation, population_presentation, rate_presentation
 from .analysis import (
     align_election_series,
     format_number,
@@ -83,10 +83,7 @@ def population(token, place, compare_place, since):
     return view
 
 
-def rate_question(token, question):
-    from .query_plan import execute_query_plan, plan_from_rate_question
-
-    result = execute_query_plan(plan_from_rate_question(question), checkpoint=token.checkpoint)
+def _time_series_chart(token, result, ylabel):
     series = result.series[0]
     with chart_session(token):
         fig, ax = plt.subplots(figsize=(12, 6))
@@ -95,15 +92,36 @@ def rate_question(token, question):
                 [o.usable_value if o.usable_value is not None else float("nan")
                  for o in series.source_observations], linestyle="none", marker=".")
         ax.set_title(result.title)
-        ax.set_ylabel("Styringsrente (%)")
+        ax.set_ylabel(ylabel)
         ax.set_xlabel("Observasjonsdato")
         fig.tight_layout()
-        chart = render_chart(fig)
+        return render_chart(fig)
+
+
+def rate_question(token, question):
+    from .query_plan import execute_query_plan, plan_from_rate_question
+
+    result = execute_query_plan(plan_from_rate_question(question), checkpoint=token.checkpoint)
+    series = result.series[0]
+    chart = _time_series_chart(token, result, "Styringsrente (%)")
     token.checkpoint()
     return {"analysis_result": result, "status": result.title,
             "source": "Kilde: Norges Bank · IR/B.KPRA.SD.R\n" + population_presentation.source_activity(result),
             "result": (False, rate_presentation.summary(result)),
             "series": [(series.name, series)], "kind": "rate", "chart": chart}
+
+
+def exchange_question(token, question):
+    from .query_plan import execute_query_plan, plan_from_exchange_question
+
+    result = execute_query_plan(plan_from_exchange_question(question), checkpoint=token.checkpoint)
+    series = result.series[0]
+    chart = _time_series_chart(token, result, result.receipt.measure.unit)
+    token.checkpoint()
+    return {"analysis_result": result, "status": result.title,
+            "source": "Kilde: Norges Bank · EXR/" + series.selection.series_code + "\n" + population_presentation.source_activity(result),
+            "result": (False, exchange_presentation.summary(result)),
+            "series": [(series.name, series)], "kind": "exchange", "chart": chart}
 
 
 def unemployment_question(token, question):
@@ -390,6 +408,8 @@ def raw_text(token, kind, series):
     token.checkpoint()
     lines = []
 
+    if kind == "exchange":
+        return exchange_presentation.raw_text(series)
     if kind == "rate":
         return rate_presentation.raw_text(series)
 
@@ -476,6 +496,8 @@ def export_csv(token, kind, series, path):
     token.checkpoint()
     frames = []
 
+    if kind == "exchange":
+        return exchange_presentation.export_csv(series, path, checkpoint=token.checkpoint)
     if kind == "rate":
         return rate_presentation.export_csv(series, path, checkpoint=token.checkpoint)
 

@@ -154,11 +154,31 @@ def validate_query_plan(plan: QueryPlan | dict[str, Any] | str, *, dataset_overr
             f"Dataset {getattr(dataset, 'id', canonical['dataset_id'])} is not SUPPORTED for execution."
         )
 
-    if canonical["dataset_id"] not in {"ssb-07459-population", "norges-bank-policy-rate"}:
+    if canonical["dataset_id"] not in {"ssb-07459-population", "norges-bank-policy-rate", "norges-bank-exchange-rate"}:
         raise QueryPlanValidationError("No query plan executor for this dataset.")
     for key in ("grouping", "ordering", "limit"):
         if canonical[key] not in ([], None):
             raise QueryPlanValidationError(f"Unsupported plan option: {key}")
+
+    if canonical["dataset_id"] == "norges-bank-exchange-rate":
+        from .providers.norway.norges_bank_exchange import (
+            validate_currency,
+            validate_selection,
+        )
+
+        if canonical["measure"] != "exchange_rate" or canonical["measure"] not in dataset.measures:
+            raise QueryPlanValidationError("Unknown measure for exchange rates.")
+        filters = canonical["filters"]
+        if set(filters) - {"currency", "since"}:
+            raise QueryPlanValidationError("Unknown exchange-rate filter.")
+        if "since" in filters and filters["since"] is None:
+            raise QueryPlanValidationError("since must be an integer when provided.")
+        try:
+            validate_currency(filters.get("currency"))
+            validate_selection(canonical["operation"], filters.get("since"))
+        except ValueError as exc:
+            raise QueryPlanValidationError(str(exc)) from exc
+        return QueryPlan.from_json(canonical)
 
     if canonical["dataset_id"] == "norges-bank-policy-rate":
         from .providers.norway.norges_bank import validate_selection
@@ -279,9 +299,24 @@ def plan_from_rate_question(question):
     ))
 
 
+def plan_from_exchange_question(question):
+    filters = {"currency": question.currency}
+    if question.since is not None:
+        filters["since"] = question.since
+    return validate_query_plan(QueryPlan(
+        "norges-bank-exchange-rate", question.operation, filters, "exchange_rate",
+    ))
+
+
 def execute_query_plan(plan: QueryPlan | dict[str, Any] | str, *, checkpoint=lambda: None):
     validated = validate_query_plan(plan)
     checkpoint()
+    if validated.dataset_id == "norges-bank-exchange-rate":
+        from .exchange import analyze_exchange
+
+        result = analyze_exchange(validated.filters["currency"], validated.operation,
+                                  validated.filters.get("since"), checkpoint=checkpoint)
+        return replace(result, receipt=replace(result.receipt, query_plan_hash=validated.plan_hash()))
     if validated.dataset_id == "norges-bank-policy-rate":
         from .rates import analyze_rate
 
@@ -322,6 +357,7 @@ __all__ = [
     "QueryPlanValidationError",
     "canonicalize_plan",
     "execute_query_plan",
+    "plan_from_exchange_question",
     "plan_from_population_question",
     "plan_from_rate_question",
     "validate_query_plan",

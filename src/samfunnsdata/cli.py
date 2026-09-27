@@ -65,15 +65,38 @@ def main():
     rate_selection.add_argument("--since", type=int, help="Vis historikk fra og med året")
     rate_selection.add_argument("--history", action="store_true", help="Vis all tilgjengelig historikk")
 
-    for command_parser in (population, compare, rate):
+    exchange = sub.add_parser("exchange", help="Vis Norges Banks valutakurser mot NOK")
+    exchange.add_argument("currency", choices=("EUR", "USD", "GBP", "SEK", "DKK"), type=str.upper)
+    exchange_selection = exchange.add_mutually_exclusive_group()
+    exchange_selection.add_argument("--since", type=int, help="Vis historikk fra og med året")
+    exchange_selection.add_argument("--history", action="store_true", help="Vis all tilgjengelig historikk")
+
+    for command_parser in (population, compare, rate, exchange):
         command_parser.add_argument("--receipt", metavar="PATH",
                                     help="Lagre datakvittering som separat JSON-fil")
 
-    for command_parser in (search, population, compare, rate):
+    for command_parser in (search, population, compare, rate, exchange):
         command_parser.add_argument("--cache-only", action="store_true", default=argparse.SUPPRESS,
                                     help="Bruk bare lokal cache; ingen HTTP-kall")
     args = parser.parse_args()
     network.set_mode(network.NetworkMode.CACHE_ONLY if args.cache_only else network.NetworkMode.ONLINE)
+
+    if args.command == "exchange":
+        from .exchange_presentation import raw_text, summary
+        from .query_plan import execute_query_plan, plan_from_exchange_question
+        from .questions import ExchangeQuestion
+
+        operation = "history" if args.history or args.since is not None else "latest"
+        try:
+            result = execute_query_plan(plan_from_exchange_question(ExchangeQuestion(args.currency, operation, args.since)))
+        except ValueError as error:
+            parser.error(str(error))
+        print(summary(result))
+        if operation == "history":
+            print(raw_text([(s.name, s) for s in result.series])[0])
+        if args.receipt:
+            export_receipt(result.receipt, args.receipt)
+        return 0
 
     if args.command == "rate":
         from .query_plan import execute_query_plan, plan_from_rate_question

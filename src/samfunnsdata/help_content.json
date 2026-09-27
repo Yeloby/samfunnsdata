@@ -7,12 +7,12 @@
   {
     "id": "capabilities",
     "title": "Hva kan programmet nå?",
-    "text": "GUI-en viser kommunebefolkning og kommunesammenligninger fra SSB, partiresultater og sammenligninger ved stortings- og kommunevalg, samt NAVs registrerte helt ledige. Programmet har også en lokal katalog over datasett og en eksplisitt QueryPlan-validering som ser etter dataset støttestatus, gyldige mål og tillatte filter før en analyse kjøres. FHI-legemidler er støttet gjennom Python/API, men ikke som spørsmål eller analyser i GUI-en. Katalogen er foreløpig et lite utvalg, ikke en komplett oversikt over offentlige data. Norges Banks styringsrente støttes i GUI og CLI med siste publiserte observasjon og historikk."
+    "text": "GUI-en viser kommunebefolkning og kommunesammenligninger fra SSB, partiresultater og sammenligninger ved stortings- og kommunevalg, samt NAVs registrerte helt ledige. Programmet har også en lokal katalog over datasett og en eksplisitt QueryPlan-validering som ser etter dataset støttestatus, gyldige mål og tillatte filter før en analyse kjøres. FHI-legemidler er støttet gjennom Python/API, men ikke som spørsmål eller analyser i GUI-en. Katalogen er foreløpig et lite utvalg, ikke en komplett oversikt over offentlige data. Norges Banks styringsrente støttes i GUI og CLI med siste publiserte observasjon og historikk. Valutakurser EUR, USD, GBP, SEK og DKK mot NOK støttes også i GUI og CLI."
   },
   {
     "id": "questions",
     "title": "Slik stiller du spørsmål",
-    "text": "Prøv «Vis befolkningen i Trondheim siden 2000», «Sammenlign Trondheim og Bergen siden 2000», «Vis FrPs stortingsvalgresultater i Trondheim siden 2009» eller «Hvordan har arbeidsledigheten i Trondheim utviklet seg?». Parseren kjenner bestemte formuleringer; den kan ikke besvare vilkårlige spørsmål. Legemiddelspørsmål er ikke koblet til parseren ennå. For styringsrenten: «Hva er styringsrenta?», «Vis styringsrenten siden 2015» eller «Hvordan har styringsrenta utviklet seg?». Bestemte datoer, månedsgjennomsnitt og prognoser støttes ikke."
+    "text": "Prøv «Vis befolkningen i Trondheim siden 2000», «Sammenlign Trondheim og Bergen siden 2000», «Vis FrPs stortingsvalgresultater i Trondheim siden 2009» eller «Hvordan har arbeidsledigheten i Trondheim utviklet seg?». Parseren kjenner bestemte formuleringer; den kan ikke besvare vilkårlige spørsmål. Legemiddelspørsmål er ikke koblet til parseren ennå. For styringsrenten: «Hva er styringsrenta?», «Vis styringsrenten siden 2015» eller «Hvordan har styringsrenta utviklet seg?». Bestemte datoer, månedsgjennomsnitt og prognoser støttes ikke. For valuta: «Hva er eurokursen?», «Hva er EUR-kursen?», «Vis eurokursen siden 2020», «Hvordan har dollarkursen utviklet seg?» eller «Vis DKK-kursen!». Også pundkursen, SEK-kursen og kursen på svenske/danske kroner støttes."
   },
   {
     "id": "browse",
@@ -22,7 +22,7 @@
   {
     "id": "concepts",
     "title": "Begreper og statistikk",
-    "text": "Kilden er myndigheten som publiserer dataene. Dimensjoner avgrenser observasjoner, for eksempel år, kjønn og alder. Måltallet sier hva som måles; enheten sier hvordan tallet uttrykkes. Antall brukere, brukere per 1000, DDD og befolkning er forskjellige måltall. En tidsserie viser observasjoner over tid, men definisjoner og geografiske grenser kan endres. Ikke summer brukere på tvers av ATC-koder: samme person kan inngå flere steder."
+    "text": "Kilden er myndigheten som publiserer dataene. Dimensjoner avgrenser observasjoner, for eksempel år, kjønn og alder. Måltallet sier hva som måles; enheten sier hvordan tallet uttrykkes. Antall brukere, brukere per 1000, DDD og befolkning er forskjellige måltall. En tidsserie viser observasjoner over tid, men definisjoner og geografiske grenser kan endres. Ikke summer brukere på tvers av ATC-koder: samme person kan inngå flere steder. Norges Banks rånoteringer vises som NOK per 1 EUR/USD/GBP eller per 100 SEK/DKK. UNIT_MULT brukes ikke til å multiplisere kildeverdien i visningen."
   },
   {
     "id": "missing",
@@ -32,7 +32,7 @@
   {
     "id": "methods",
     "title": "Datakilder, metode og beregninger",
-    "text": "Kildedata er tallene myndigheten leverer. Samfunnsdata kan beregne forskjell mellom to tidspunkter, prosentvis endring og forskjeller i prosentpoeng. Prosentvis endring er (siste − første) / første × 100; dette er ikke definert når første er null. En tolkning av hvorfor tallene endres er noe annet enn en beregning. Samvariasjon dokumenterer ikke årsak. Kilde- og metodetekst i dagens resultater er analysespesifikk; fullstendige datakvitteringer for alle analyser er planlagt. Styringsrenten viser publiserte virkedagsobservasjoner ved slutten av dagen i prosent. Endring oppgis i prosentpoeng. Ingen dager fylles inn, og siste observasjon vises med dato."
+    "text": "Kildedata er tallene myndigheten leverer. Samfunnsdata kan beregne forskjell mellom to tidspunkter, prosentvis endring og forskjeller i prosentpoeng. Prosentvis endring er (siste − første) / første × 100; dette er ikke definert når første er null. En tolkning av hvorfor tallene endres er noe annet enn en beregning. Samvariasjon dokumenterer ikke årsak. Kilde- og metodetekst i dagens resultater er analysespesifikk; fullstendige datakvitteringer for alle analyser er planlagt. Styringsrenten viser publiserte virkedagsobservasjoner ved slutten av dagen i prosent. Endring oppgis i prosentpoeng. Ingen dager fylles inn, og siste observasjon vises med dato. For valutahistorikk er endringen siste minus første faktiske endepunkt i kildens noteringsenhet. Ingen prosentberegning, interpolasjon eller normalisering til én valutaenhet."
   },
   {
     "id": "export",
@@ -42,7 +42,7 @@
   {
     "id": "limits",
     "title": "Begrensninger",
-    "text": "Støtten gjelder bestemte datasett og analyser, ikke alle data fra hver myndighet. Geografiske eller andre dimensjoner finnes bare når kilden faktisk tilbyr dem. FHI-tabell 825 støtter ATC, kjønn, alder, år og måltall. Data om et tema kan være utilgjengelige, ikke maskinlesbare eller underlagt begrensninger. Programmet skal ikke gjette manglende data eller skape statistisk sikkerhet som kilden ikke gir."
+    "text": "Støtten gjelder bestemte datasett og analyser, ikke alle data fra hver myndighet. Geografiske eller andre dimensjoner finnes bare når kilden faktisk tilbyr dem. FHI-tabell 825 støtter ATC, kjønn, alder, år og måltall. Data om et tema kan være utilgjengelige, ikke maskinlesbare eller underlagt begrensninger. Programmet skal ikke gjette manglende data eller skape statistisk sikkerhet som kilden ikke gir. Valutakurser støtter ikke beløpsomregning, krysskurser, andre valutaer, bestemte datoer, gjennomsnitt eller prognoser."
   },
   {
     "id": "troubleshooting",
@@ -52,6 +52,6 @@
   {
     "id": "privacy",
     "title": "Personvern og nettverk",
-    "text": "GUI-spørsmål tolkes lokalt. Valgte dataforespørsler sendes til kildene når nødvendig; CLI search sender selve søketeksten til SSB bare i online-modus og kun når lokal cache ikke gir treff. Programmet støtter også en eksplisitt cache-only-modus som forbyr alle nettverkskall. Kilden kan se IP-adresse og forespørsel. Ingen telemetri er implementert. Cache og eksporter lagres lokalt uten kryptering fra programmet og kan vise hvilke utvalg du undersøker. Eldre cachekopier og terminalhistorikk kan også finnes. Datakvitteringen inneholder utvalg, observasjoner og brukstidspunkt. Norges Bank mottar bare fast serie og strukturerte utvalg; spørsmålsteksten forblir lokal. Rentedata hentes på nytt i online-modus; cache-only bruker samme lagrede utvalg eller feiler uten nettverk."
+    "text": "GUI-spørsmål tolkes lokalt. Valgte dataforespørsler sendes til kildene når nødvendig; CLI search sender selve søketeksten til SSB bare i online-modus og kun når lokal cache ikke gir treff. Programmet støtter også en eksplisitt cache-only-modus som forbyr alle nettverkskall. Kilden kan se IP-adresse og forespørsel. Ingen telemetri er implementert. Cache og eksporter lagres lokalt uten kryptering fra programmet og kan vise hvilke utvalg du undersøker. Eldre cachekopier og terminalhistorikk kan også finnes. Datakvitteringen inneholder utvalg, observasjoner og brukstidspunkt. Norges Bank mottar bare fast serie og strukturerte utvalg; spørsmålsteksten forblir lokal. Rentedata hentes på nytt i online-modus; cache-only bruker samme lagrede utvalg eller feiler uten nettverk. Rente- og valutadata hentes på nytt i online-modus. Kun lokal cache krever identisk lagret utvalg og utfører null HTTP-kall."
   }
 ]

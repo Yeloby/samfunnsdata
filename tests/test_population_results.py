@@ -347,3 +347,24 @@ def test_cancel_after_export_preparation_does_not_write(tmp_path, monkeypatch, k
         with pytest.raises(CancelledError):
             gui_work.export_receipt(token, receipt, path)
     assert not path.exists()
+
+
+@pytest.mark.parametrize("version", ["1", "2"])
+def test_population_historical_wire_contract(version):
+    """Golden wire captured from unchanged Milestone-I population contracts."""
+    receipt = replace(
+        analyze(frame((100, 0, None, 120), (None, "", "..", "P"),
+                      ("2000", "2001", "2002", "2003"))).receipt,
+        schema_version=version, application_version="compatibility-fixture",
+    )
+    golden = (Path(__file__).parent / f"fixtures/population_receipt_v{version}.json").read_text()
+    assert receipt.to_json() == golden
+    restored = DataReceipt.from_json(golden)
+    assert restored.to_json() == golden
+    assert restored.to_json() == restored.to_json()
+    observations = restored.series[0].source_observations
+    assert [o.source_value for o in observations] == [100, 0, None, 120]
+    assert [o.usable_value for o in observations] == [100, 0, None, None]
+    assert [o.status for o in observations] == [None, "", "..", "P"]
+    provenance = json.loads(golden)["series"][0]["provenance"]
+    assert ("network_mode" in provenance) == (version == "2")

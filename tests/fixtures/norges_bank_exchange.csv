@@ -1,0 +1,21 @@
+FREQ;Frequency;BASE_CUR;Base Currency;QUOTE_CUR;Quote Currency;TENOR;Tenor;DECIMALS;CALCULATED;UNIT_MULT;Unit Multiplier;COLLECTION;Collection Indicator;TIME_PERIOD;OBS_VALUE
+B;Business;DKK;Danish krone;NOK;Norwegian krone;SP;Spot;2;false;2;Hundreds;C;ECB concertation time 14:15 CET;2024-01-02;151.33
+B;Business;DKK;Danish krone;NOK;Norwegian krone;SP;Spot;2;false;2;Hundreds;C;ECB concertation time 14:15 CET;2024-01-03;151.78
+B;Business;DKK;Danish krone;NOK;Norwegian krone;SP;Spot;2;false;2;Hundreds;C;ECB concertation time 14:15 CET;2024-01-04;151.29
+B;Business;DKK;Danish krone;NOK;Norwegian krone;SP;Spot;2;false;2;Hundreds;C;ECB concertation time 14:15 CET;2024-01-05;151.63
+B;Business;USD;US dollar;NOK;Norwegian krone;SP;Spot;4;false;0;Units;C;ECB concertation time 14:15 CET;2024-01-02;10.2971
+B;Business;USD;US dollar;NOK;Norwegian krone;SP;Spot;4;false;0;Units;C;ECB concertation time 14:15 CET;2024-01-03;10.3672
+B;Business;USD;US dollar;NOK;Norwegian krone;SP;Spot;4;false;0;Units;C;ECB concertation time 14:15 CET;2024-01-04;10.3027
+B;Business;USD;US dollar;NOK;Norwegian krone;SP;Spot;4;false;0;Units;C;ECB concertation time 14:15 CET;2024-01-05;10.3553
+B;Business;GBP;Pound sterling;NOK;Norwegian krone;SP;Spot;4;false;0;Units;C;ECB concertation time 14:15 CET;2024-01-02;13.0204
+B;Business;GBP;Pound sterling;NOK;Norwegian krone;SP;Spot;4;false;0;Units;C;ECB concertation time 14:15 CET;2024-01-03;13.0912
+B;Business;GBP;Pound sterling;NOK;Norwegian krone;SP;Spot;4;false;0;Units;C;ECB concertation time 14:15 CET;2024-01-04;13.0792
+B;Business;GBP;Pound sterling;NOK;Norwegian krone;SP;Spot;4;false;0;Units;C;ECB concertation time 14:15 CET;2024-01-05;13.118
+B;Business;EUR;Euro;NOK;Norwegian krone;SP;Spot;4;false;0;Units;C;ECB concertation time 14:15 CET;2024-01-02;11.2815
+B;Business;EUR;Euro;NOK;Norwegian krone;SP;Spot;4;false;0;Units;C;ECB concertation time 14:15 CET;2024-01-03;11.32
+B;Business;EUR;Euro;NOK;Norwegian krone;SP;Spot;4;false;0;Units;C;ECB concertation time 14:15 CET;2024-01-04;11.2845
+B;Business;EUR;Euro;NOK;Norwegian krone;SP;Spot;4;false;0;Units;C;ECB concertation time 14:15 CET;2024-01-05;11.309
+B;Business;SEK;Swedish krona;NOK;Norwegian krone;SP;Spot;2;false;2;Hundreds;C;ECB concertation time 14:15 CET;2024-01-02;101.14
+B;Business;SEK;Swedish krona;NOK;Norwegian krone;SP;Spot;2;false;2;Hundreds;C;ECB concertation time 14:15 CET;2024-01-03;101.15
+B;Business;SEK;Swedish krona;NOK;Norwegian krone;SP;Spot;2;false;2;Hundreds;C;ECB concertation time 14:15 CET;2024-01-04;100.84
+B;Business;SEK;Swedish krona;NOK;Norwegian krone;SP;Spot;2;false;2;Hundreds;C;ECB concertation time 14:15 CET;2024-01-05;100.66

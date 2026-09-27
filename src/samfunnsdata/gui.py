@@ -10,6 +10,7 @@ from .navigation import install_navigation, text_window
 from .questions import (
     ElectionComparisonQuestion,
     ElectionQuestion,
+    ExchangeQuestion,
     MunicipalElectionComparisonQuestion,
     MunicipalElectionQuestion,
     PopulationQuestion,
@@ -250,6 +251,9 @@ class SamfunnsdataWindow(Gtk.ApplicationWindow):
             self.status.set_text(str(error))
             return
 
+        if isinstance(question, ExchangeQuestion):
+            self.jobs.submit(lambda token: gui_work.exchange_question(token, question), self._apply_analysis)
+            return
         if isinstance(question, RateQuestion):
             self.jobs.submit(lambda token: gui_work.rate_question(token, question), self._apply_analysis)
             return

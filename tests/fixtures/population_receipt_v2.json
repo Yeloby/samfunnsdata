@@ -1,0 +1,168 @@
+{
+  "adapter_version": "ssb-population/1",
+  "application_version": "compatibility-fixture",
+  "measure": {
+    "id": "population",
+    "label": "Folkemengde",
+    "source_code": "Personer1",
+    "unit": "persons"
+  },
+  "query_plan_hash": null,
+  "schema_version": "2",
+  "series": [
+    {
+      "derived_facts": {
+        "change": null,
+        "first_status": null,
+        "first_value": 100,
+        "first_year": "2000",
+        "last_status": "P",
+        "last_value": null,
+        "last_year": "2003",
+        "percent_change": null
+      },
+      "id": "series-1",
+      "provenance": {
+        "cache_hit": null,
+        "content_hash": null,
+        "fetched_at": null,
+        "network_mode": "online",
+        "network_occurred": false,
+        "raw_data_reference": null,
+        "requests": [],
+        "source_updated_at": "2026-01-01T00:00:00Z"
+      },
+      "provider_metadata": {
+        "extension": {
+          "test": 1
+        },
+        "label": "Kildetittel",
+        "note": [
+          "Original merknad"
+        ],
+        "updated": "2026-01-01T00:00:00Z"
+      },
+      "selection": {
+        "geography_codelist": "agg_KommSummer",
+        "geography_output": "aggregated",
+        "measure_code": "Personer1",
+        "municipality": "Ås",
+        "municipality_code": "K-Ås",
+        "requested_place": "Ås",
+        "since": null,
+        "source_format": "json-stat2",
+        "source_language": "no",
+        "source_period": "*"
+      },
+      "source_observations": [
+        {
+          "period": "2000",
+          "period_label": "2000",
+          "source_value": 100.0,
+          "status": null,
+          "usable_value": 100.0
+        },
+        {
+          "period": "2001",
+          "period_label": "2001",
+          "source_value": 0.0,
+          "status": "",
+          "usable_value": 0.0
+        },
+        {
+          "period": "2002",
+          "period_label": "2002",
+          "source_value": null,
+          "status": "..",
+          "usable_value": null
+        },
+        {
+          "period": "2003",
+          "period_label": "2003",
+          "source_value": 120.0,
+          "status": "P",
+          "usable_value": null
+        }
+      ],
+      "source_returned_period": [
+        "2000",
+        "2003"
+      ],
+      "status_available": true,
+      "warnings": [
+        "Statusmerkede kildeverdier er bevart, men brukes ikke i beregninger eller graf. Kodene er ikke tolket.",
+        "Kilden har manglende observasjoner. Ingen verdier er erstattet.",
+        "Endring kan ikke beregnes fra de faktiske endepunktene."
+      ]
+    }
+  ],
+  "source": {
+    "access_url": "https://data.ssb.no/api/pxwebapi/v2/tables/07459/data",
+    "authority": "Statistisk sentralbyrå",
+    "dataset_id": "07459",
+    "dataset_title": "Befolkning",
+    "license": null,
+    "provider": "ssb",
+    "source_url": "https://www.ssb.no/statbank/table/07459"
+  },
+  "transformations": [
+    {
+      "description": "SSBs aggregerte kommuneserie; kommunen velges hos kilden.",
+      "inputs": [
+        "selection.municipality_code",
+        "selection.geography_codelist"
+      ],
+      "operation": "select_municipality",
+      "outputs": [
+        "source_observations"
+      ],
+      "series_ids": [
+        "series-1"
+      ]
+    },
+    {
+      "description": "Behold kildeobservasjoner fra og med ønsket år, i kildens rekkefølge.",
+      "inputs": [
+        "selection.since",
+        "source_observations"
+      ],
+      "operation": "restrict_period",
+      "outputs": [
+        "source_observations"
+      ],
+      "series_ids": [
+        "series-1"
+      ]
+    },
+    {
+      "description": "Siste minus første endepunkt. Manglende eller statusmerket endepunkt gir ukjent resultat.",
+      "inputs": [
+        "derived_facts.first_value",
+        "derived_facts.last_value"
+      ],
+      "operation": "absolute_change",
+      "outputs": [
+        "derived_facts.change"
+      ],
+      "series_ids": [
+        "series-1"
+      ]
+    },
+    {
+      "description": "Absolutt endring delt på første verdi, ganger 100. Første verdi lik null gir ukjent resultat.",
+      "inputs": [
+        "derived_facts.change",
+        "derived_facts.first_value"
+      ],
+      "operation": "percentage_change",
+      "outputs": [
+        "derived_facts.percent_change"
+      ],
+      "series_ids": [
+        "series-1"
+      ]
+    }
+  ],
+  "used_at": "2026-09-22T12:00:00+00:00",
+  "warnings": []
+}

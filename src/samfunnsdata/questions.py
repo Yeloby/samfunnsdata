@@ -11,7 +11,7 @@ class RateQuestion:
 
 
 def parse_rate_question(text: str) -> RateQuestion:
-    text = normalize_norwegian_text(text).casefold().rstrip("?.").strip()
+    text = normalize_norwegian_text(text).casefold().rstrip("?.!").strip()
     term = r"(?:norges banks )?styringsrent(?:e|en|a)"
     latest = rf"(?:(?:hva er|vis) )?{term}"
     history = rf"hvordan har {term} utviklet seg"
@@ -26,6 +26,35 @@ def parse_rate_question(text: str) -> RateQuestion:
     if re.fullmatch(latest, text):
         return RateQuestion()
     raise ValueError("Styringsrenten støtter siste observasjon eller historikk: «Vis styringsrenten siden 2015».")
+
+
+@dataclass(frozen=True)
+class ExchangeQuestion:
+    currency: str
+    operation: str = "latest"
+    since: int | None = None
+
+
+def parse_exchange_question(text: str) -> ExchangeQuestion:
+    text = normalize_norwegian_text(text).casefold().rstrip("?.!").strip()
+    terms = {"eurokursen": "EUR", "dollarkursen": "USD", "pundkursen": "GBP",
+             "kursen på svenske kroner": "SEK", "kursen på danske kroner": "DKK"}
+    terms.update({f"{code}-kursen": code.upper() for code in ("eur", "usd", "gbp", "sek", "dkk")})
+    for term, currency in terms.items():
+        latest = rf"(?:(?:hva er|vis) )?{term}"
+        history = rf"hvordan har {term} utviklet seg"
+        since = re.fullmatch(rf"(?:(?:vis )?{term}|{history}) siden ([0-9]{{4}})", text)
+        if since:
+            year = int(since.group(1))
+            if year == 0:
+                raise ValueError("Fra år må være større enn null.")
+            return ExchangeQuestion(currency, "history", year)
+        if re.fullmatch(history, text):
+            return ExchangeQuestion(currency, "history")
+        if re.fullmatch(latest, text):
+            return ExchangeQuestion(currency)
+    raise ValueError("Valutakurser støtter siste observasjon eller historikk for EUR, USD, GBP, SEK og DKK; "
+                     "for eksempel «Vis eurokursen siden 2020». Beløpsomregning støttes ikke.")
 
 
 @dataclass(frozen=True)
@@ -483,6 +512,7 @@ def parse_question(text: str):
     if "policy_rate" in find_concepts(text):
         return parse_rate_question(text)
     parsers = [
+        parse_exchange_question,
         parse_unemployment_question,
         parse_election_comparison_question,
         parse_municipal_election_comparison_question,

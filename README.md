@@ -10,7 +10,7 @@ antagelser om store deler av det offentlige datagrunnlaget.
 
 ## Hva programmet kan gjøre i dag
 
-- Se Norges Banks styringsrente og utviklingen i prosentpoeng
+- Se Norges Banks styringsrente og valutakurser med kilde, dato og riktig enhet
 - Se befolkningsutvikling i en kommune over tid
 - Sammenligne kommuner etter samme mål og samme tidsfilter
 - Søk i en lokal katalog over offentlige datasett
@@ -26,6 +26,8 @@ samfunnsdata compare Trondheim Bergen --since 2010
 samfunnsdata search "befolkning"
 samfunnsdata rate
 samfunnsdata rate --since 2015 --receipt rente.receipt.json
+samfunnsdata exchange EUR
+samfunnsdata exchange DKK --since 2020 --receipt valuta.receipt.json
 ```
 
 Dette er reelle kommandoer i prosjektet. De viser hvordan Samfunnsdata bruker en
@@ -38,11 +40,11 @@ Samfunnsdata støtter i dag et avgrenset, men tydelig utvalg av norske offentlig
 kilder og analyser:
 
 - SSB: befolkningsdata, sammenligninger og datakatalog
-- Norges Bank: styringsrente, siste publiserte observasjon og historikk
+- Norges Bank: styringsrente og EUR/USD/GBP/SEK/DKK mot NOK; siste observasjon og historikk
 - NAV: registrerte helt ledige
 - Valgdirektoratet: partivalgssammenligninger der programmet faktisk har
   implementert støtten
-- FHI: helsestatistikk og legemiddeldata via lokale Python- og API-løsninger
+- FHI: avgrensede legemiddeldata gjennom Python/API, uten GUI-spørsmål
 
 Dette er ikke et prosjekt som lover støtte for alle offentlige data. Det er et
 lokalt, etterprøvbart verktøy med klare grenser.
@@ -61,30 +63,11 @@ Samfunnsdata skiller tydelig mellom tre tilstander:
 Den viktige regelen er enkel: oppdaget metadata kan fortelle deg at et datasett
 finnes, men det kan ikke gi det kjørbar status i programmet.
 
-## Et bredere offentlig datalandskap
+## Flere datakilder
 
-Samfunnsdata er ment å vokse innenfor et realistisk, offentlig og norsk
-datasettlandskap. Det omfatter blant annet:
-
-- SSB / KOSTRA
-- NAV
-- FHI
-- Valgdirektoratet
-- Kartverket / Geonorge
-- MET Norway / Frost
-- Statens vegvesen / NVDB / Trafikkdata
-- flere datasett fra Norges Bank
-- NVE
-- Brønnøysundregistrene
-- Sokkeldirektoratet
-- Enova
-- Husbanken
-- Udir / HK-dir / DBH
-- relevante miljø-, transport-, fiskeri- og andre offentlige datakilder
-
-Dette er en bred horisont, ikke en liste over noe som allerede er støttet. Det er
-et mål for hvor Samfunnsdata kan bli nyttig, uten at det blir et løfte om å
-støtte alt fra hver enkelt myndighet.
+[Kildeoversikten](docs/data-sources.md) beskriver norske offentlige API-er og
+nedlastinger, dagens støtte og kandidater innen blant annet økonomi, helse,
+utdanning, miljø, transport og geografi. Kandidatene er ikke kjørbare analyser.
 
 ## Personvern og lokalt arbeid
 
@@ -127,7 +110,10 @@ etterprøvbare analyser innenfor et avgrenset og ryddig sett av datasett.
 
 Styringsrenten vises med kildens observasjonsdato og enhet. I GUI kan du skrive
 «Hva er styringsrenta?» eller «Vis styringsrenten siden 2015».
-Se [styringsrente og begrensninger](docs/norges-bank.md) for detaljer.
+For valuta: «Hva er eurokursen?», «Vis eurokursen siden 2020» eller
+«Hvordan har dollarkursen utviklet seg?». EUR/USD/GBP vises per én valutaenhet,
+SEK/DKK per 100. Beløpsomregning og prognoser støttes ikke.
+Se [renter, valutakurser og begrensninger](docs/norges-bank.md) for detaljer.
 
 Se [docs/architecture.md](docs/architecture.md) for mer om arkitekturen, og
 [docs/privacy.md](docs/privacy.md) for personvern og nettverksmodell.

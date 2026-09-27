@@ -161,9 +161,10 @@ forteller at et datasett finnes.
 
 ## Videre arbeid, ikke implementert
 
-Felles nettverks-/personverntransport, generell discovery, begrepsregister,
-NLP, RDF, nye databaser, krysskildeanalyse og migrering av FHI/NAV/valg er
-fortsatt utsatt. DuckDB er allerede deklarert som avhengighet, men brukes ikke
+Felles nettverks-/personverntransport, SSB-katalogoppdatering og et lokalt
+begrepsregister er implementert. Generell discovery på tvers av kilder, fri
+språkforståelse, RDF, nye databaser, krysskildeanalyse og migrering av FHI/NAV/valg
+til den felles resultatkontrakten gjenstår. DuckDB er allerede deklarert som avhengighet, men brukes ikke
 som nytt lager i dette prosjektet.
 Se [personvern](privacy.md) for faktisk nettverks- og lokal lagringsatferd og
 [README.md](../README.md) for prosjektets publiserte bruksscenarioer.
@@ -192,3 +193,24 @@ CLI `rate` bruker samme tjeneste og presentasjon. Renteendring beregnes i
 prosentpoeng med faktiske endepunkter, uten prosentvis endring eller interpolasjon.
 [API-kontrakten](norges-bank.md) beskriver offisiell dokumentasjon, semantikk,
 cache, begrensninger og livekontroll. Ingen nye avhengigheter er lagt til.
+
+## Valutakurser
+
+`norges_bank_exchange` validerer fem faste EXR-serier og alle kildeattributter
+som styrer noteringen. QueryPlan har en eksplisitt lokal binding til
+`exchange.analyze_exchange`; obligatorisk `currency` og valgfritt heltall `since`
+er de eneste filtrene. Operasjonene er `latest` og `history`. Ingen metadata
+velger utfører, URL eller nye parameternavn. Nettverksgrensen er uendret.
+
+Kvittering v3 gjenbrukes uten endring av wireformatet. Kildens `OBS_VALUE`
+beholdes som tekst, mens `usable_value` er den numeriske verdien når status
+tillater bruk. Metadata bevarer kildeattributtene og et eksplisitt
+noteringsgrunnlag. Manglende UNIT er null; NOK kommer fra QUOTE_CUR.
+Presentasjonen er identitet, og ingen normalisert verdi beregnes. Historikkens
+differanse bruker samme enhet som kilden, eksempelvis NOK per 100 DKK.
+
+CLI og GUI bruker samme tjeneste og presentasjonsmodul. GUI bruker eksisterende
+GuiJobs, generasjonsvern, kansellering, matplotlib-lås og eksportflyt. Grafen
+viser bare kildepunkter. Permanente golden-tester bevarer befolkningens v1/v2-JSON.
+Se [kildeoversikten](data-sources.md) for videre kandidater og
+[Norges Bank-kontrakten](norges-bank.md) for kildebevis og cache.

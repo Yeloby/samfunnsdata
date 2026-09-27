@@ -339,3 +339,17 @@ def test_new_receipt_cannot_claim_old_schema(backend):
         replace(receipt, schema_version="2")
     with pytest.raises(ValueError, match="schema version"):
         replace(receipt, schema_version="99")
+
+
+@pytest.mark.parametrize("raw", ["0", "", "4.5"])
+@pytest.mark.parametrize("method", ["", "N", "E", "UNKNOWN"])
+@pytest.mark.parametrize("status", ["", "P"])
+def test_normal_method_missing_zero_status(raw, method, status):
+    rows = LATEST.replace(";4.5;;", f";{raw};{method};").splitlines()
+    o = nb.parse_csv(rows[0] + ";OBS_STATUS\n" + rows[1] + f";{status}\n")[0]
+    assert o.source_value == raw and o.calculation_method == method and o.status == status
+    assert o.usable_value == (float(raw) if raw and method in ("", "N") and not status else None)
+
+
+def test_rate_exclamation_mark():
+    assert parse_question("Vis styringsrenta!") == RateQuestion()
