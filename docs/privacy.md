@@ -17,6 +17,9 @@ Det er derfor ikke riktig at alle spørsmål alltid forblir lokale.
   startdato eller valg av siste observasjon sendes til `data.norges-bank.no`.
   Spørsmålstekst sendes aldri. ONLINE henter ferske rente- og valutadata ved hver analyse;
   CACHE_ONLY leser tidligere lagret identisk utvalg uten HTTP, eller feiler.
+- Statens vegvesen (Python/API): normalisert vegreferanse sendes i et GraphQL-søk;
+  valgt trafikkregistreringspunkt-ID sendes i en ny forespørsel om årsverdier.
+  Årsfilter brukes lokalt. Trafikkdata caches ikke; cache-only feiler uten HTTP.
 - NAV: programmet laster en CSV-fil; kommunen filtreres lokalt.
 - Valgdirektoratet: år og geografisk område inngår i API-kall; parti filtreres lokalt.
 - FHI (Python/API): tabell og valgte dimensjonskoder sendes til FHI.

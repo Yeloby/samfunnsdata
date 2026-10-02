@@ -1,4 +1,4 @@
-# Samfunnsdata: implementert arkitektur etter milepæl D
+# Samfunnsdata: implementert arkitektur
 
 Samfunnsdata er en lokal Python/GTK-applikasjon. Parseren gjenkjenner bestemte
 spørsmålsformer; katalogen beskriver et lite utvalg datasett. En katalogoppføring
@@ -81,9 +81,11 @@ svaret. Providerens rå metadata kan fortsatt inneholde egne dimensjonsnavn.
 
 ## Hentetid, cache og ærlig uvisshet
 
-Eksisterende SSB-provider gir ikke pålitelig hentetid eller cachetreff videre.
-Derfor er `fetched_at`, `cache_hit`, `content_hash` og `raw_data_reference` null,
-også når providerkallet i denne kjøringen faktisk måtte hente fra nettet.
+SSB-provider viderefører cachetreff og hentetid for dataforespørselen gjennom
+`network_access`. `cache_hit` viser om data kom fra cache; `fetched_at` settes
+fra nettverkskallets fullføringstid ved ny henting og er null ved cachetreff.
+Eldre eller alternative providerresponser uten disse feltene gir null.
+`content_hash` og `raw_data_reference` er fortsatt null.
 `used_at` er UTC-tidspunktet da applikasjonsresultatet ble konstruert. Det er aldri
 bevis på ny kildehenting. Kildens `updated` kopieres når tilgjengelig; ellers null.
 Lisens er null fordi den ikke finnes i eksisterende konfigurasjon/metadataflyt.
@@ -112,8 +114,9 @@ under en prosesslås med unike midlertidige filer; bildebytes leveres tilbake.
 NAVs eksisterende filcache beskyttes av en GUI-lås rundt henting og parsing.
 
 Befolkningstjenesten sjekker jobbtokens mellom providerkall. `gui_work` renderer
-resultatet; GTK leser ikke SSB-kolonner. Nye handlinger «Vis datakvittering» og
-«Eksporter kvittering (JSON)» gjelder bare gjeldende befolkningsresultat.
+resultatet; GTK leser ikke SSB-kolonner. Handlingene «Vis datakvittering» og
+«Eksporter kvittering (JSON)» gjelder gjeldende befolknings-, rente- eller
+valutaresultat.
 Kvitteringstekst/eksport forberedes i arbeidstråd; sene filvalg og kvitteringsvinduer
 følger samme generasjonsvern. Innsetting av ferdig tekst i GTK skjer på hovedtråden;
 stor tabellvirtualisering er ikke implementert.
@@ -140,8 +143,15 @@ at schemaversionen er støttet, at datasettet faktisk finnes, at det er merket s
 forventede dimensjoner med gyldige verdier. En plan kan ikke bli et kjørbart
 program bare fordi en oppdaget SSB-tabell ser relevant ut i metadata.
 
-Planutføreren støtter `ssb-07459-population` med `lookup` og
-`norges-bank-policy-rate` med `latest`/`history`. Andre støttede datasett bruker fortsatt sine egne analyseveier.
+Planutføreren har eksplisitte lokale bindinger for fire datasett:
+
+- `ssb-07459-population`: `lookup` via `population.analyze_population`.
+- `norges-bank-policy-rate`: `latest`/`history` via `rates.analyze_rate`.
+- `norges-bank-exchange-rate`: `latest`/`history` via `exchange.analyze_exchange`.
+- `statens-vegvesen-traffic-volume`: `latest`/`history` via
+  `providers.norway.vegvesen.traffic_volume`.
+
+NAV, valg og FHI bruker fortsatt sine egne analyseveier.
 Ikke-tomme `grouping`/`ordering` og en satt `limit` avvises fordi utføreren
 ikke implementerer dem. Ukjente felt og feil JSON-typer avvises; år og
 skjemaversjon må være heltall, ikke tekst, desimaltall eller boolske verdier.
@@ -214,3 +224,14 @@ GuiJobs, generasjonsvern, kansellering, matplotlib-lås og eksportflyt. Grafen
 viser bare kildepunkter. Permanente golden-tester bevarer befolkningens v1/v2-JSON.
 Se [kildeoversikten](data-sources.md) for videre kandidater og
 [Norges Bank-kontrakten](norges-bank.md) for kildebevis og cache.
+
+
+## Trafikkdata
+
+QueryPlan binder `statens-vegvesen-traffic-volume` til `vegvesen.traffic_volume`.
+`road_reference` er obligatorisk; `history` tillater valgfritt heltall `since`
+fra 1900. `latest` tillater ikke `since`. Adapteren velger ett
+trafikkregistreringspunkt gjennom et GraphQL-søk og henter publiserte årsverdier.
+Resultatet bruker `TimeSeries` og datakvittering v3. Trafikkdata lagres ikke i
+cache; `CACHE_ONLY` feiler uten nettverkskall. Python/API og QueryPlan er
+implementert, men CLI har ingen trafikkkommando og GUI har ingen trafikkhandler.

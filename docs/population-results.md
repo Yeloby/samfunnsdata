@@ -11,14 +11,15 @@ cacheformat er uendret. Ingen nye avhengigheter.
 | Spørsmål/manuelle valg/CLI | Kommunenavn, valgfri sammenligningskommune, `since`. Ingen kommunekode ennå. |
 | SSB kodeliste | Navn og kode i `agg_KommSummer`. |
 | SSB dataforespørsel | Tabell 07459, Region, Personer1, Tid=*, aggregert kommuneserie, norsk JSON-stat2. |
-| Cache/HTTP | JSON-payload; ingen hentemanifest, ingen videreført cachetreff. Cachehash er forespørselsidentitet. |
+| Cache/HTTP | JSON-payload; ingen hentemanifest; cachetreff og hentetid ved ny henting videreføres. Cachehash er forespørselsidentitet. |
 | Konvertering | Periodekoder/etiketter, kildeverdier, status; øvrig JSON-stat-metadata i attrs. |
 | Katalog | Befolkningstittel, kilde-/API-URL og enhet persons. Ingen registrert lisens. |
 | Analyse | Lokal periodefiltrering, faktiske endepunkter, statuskontroll, absolutt/prosentvis endring. |
 | Resultat D | Uavhengige typed felt/snapshots, kildeperiode før filter og faktisk brukt periode, kilde og beregning adskilt. |
 | Presentasjon D | GUI/CLI/graf/rådata/CSV leser resultatsseriene; kvittering kan vises og eksporteres separat. |
 
-Brukstid kan registreres, men opprinnelig hentetid er ukjent. Metadata som ikke
+Brukstid registreres separat. Ved ny henting registreres nettverkskallets
+fullføringstid; opprinnelig hentetid for cacheposter er fortsatt ukjent. Metadata som ikke
 finnes i payload/katalog fylles ikke med gjettede opplysninger.
 
 ## Bruk
@@ -34,8 +35,9 @@ samfunnsdata compare Trondheim Bergen Ås --since 2000 --receipt comparison.rece
 
 `DataReceipt.from_json(receipt.to_json())` bevarer kontrakten. JSON har eksplisitt
 skjemaversjon og strukturerte kildeobservasjoner/beregningssteg. Metadata i wireformat
-er ordinær JSON. `fetched_at`, `cache_hit`, `content_hash`, `raw_data_reference` og
-lisens er ukjente i dagens flyt; `used_at` er kun konstruksjonstidspunktet.
+er ordinær JSON. `cache_hit` og `fetched_at` videreføres når provideren har dem;
+`fetched_at` er null ved cachetreff. `content_hash`, `raw_data_reference` og
+lisens er fortsatt ukjente; `used_at` er kun konstruksjonstidspunktet.
 
 ## Kompatibilitet og bevis
 

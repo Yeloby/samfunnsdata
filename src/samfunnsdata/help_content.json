@@ -37,7 +37,7 @@
   {
     "id": "export",
     "title": "Rådata og eksport",
-    "text": "Etter en vellykket analyse blir Data → Rådata og Fil → Eksporter CSV tilgjengelige. Rådatavisningen viser observasjonene valgt for analysen, ikke nødvendigvis hele originalresponsen. CSV-eksporten inneholder de valgte resultatkolonnene; den inneholder foreløpig ikke en full datakvittering eller all kildemetadata. Eksport skjer til en lokal fil du velger. Befolkningsresultater har «Vis datakvittering» og «Eksporter kvittering (JSON)». Velg for eksempel population.csv og population.receipt.json som separate filer. Ukjent opprinnelig hentetid er ukjent; brukstid er ikke hentetid. Styringsrenten har også rådata, CSV og datakvittering som JSON."
+    "text": "Etter en vellykket analyse blir Data → Rådata og Fil → Eksporter CSV tilgjengelige. Rådatavisningen viser observasjonene valgt for analysen, ikke nødvendigvis hele originalresponsen. CSV-eksporten inneholder de valgte resultatkolonnene; den inneholder foreløpig ikke en full datakvittering eller all kildemetadata. Eksport skjer til en lokal fil du velger. Befolkningsresultater har «Vis datakvittering» og «Eksporter kvittering (JSON)». Velg for eksempel population.csv og population.receipt.json som separate filer. Ukjent opprinnelig hentetid er ukjent; brukstid er ikke hentetid. Styringsrenten og valutakurser har også rådata, CSV og datakvittering som JSON."
   },
   {
     "id": "limits",

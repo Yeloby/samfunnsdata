@@ -13,7 +13,7 @@ antagelser om store deler av det offentlige datagrunnlaget.
 - Se Norges Banks styringsrente og valutakurser med kilde, dato og riktig enhet
 - Se befolkningsutvikling i en kommune over tid
 - Sammenligne kommuner etter samme mål og samme tidsfilter
-- Søk i en lokal katalog over offentlige datasett
+- Søk i en lokal katalog over offentlige datasett i GUI; CLI `search` søker i SSB-tabeller
 - Se hvilke kilder som er støttet, hvilke som bare er oppdaget, og hvilke som
   fortsatt er planlagt
 - Eksportere CSV og datakvitteringer når analysen faktisk støttes
